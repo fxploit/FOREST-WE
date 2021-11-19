@@ -9,11 +9,28 @@ import shutil
 from distutils.dir_util import copy_tree
 import time
 import pytsk3
+import sqlite3
+from pathlib import Path
+import hashlib
+
+
+
+
+        
+    
+    
 
 class MyApp(QWidget):
         
     def __init__(self):
         super().__init__()
+        
+        if os.path.isfile('test2.db'):
+            os.remove('test2.db')
+        
+        self.con = sqlite3.connect('test2.db')
+        self.cur = self.con.cursor()
+        self.create_db()
         self.initUI()
         self.initParser()
 
@@ -49,9 +66,10 @@ class MyApp(QWidget):
         # analysis_btn = QPushButton('ANALYSIS', self)
         # report_btn = QPushButton('REPORT', self)
         
-        self.SelectFile_btn = QPushButton('Select file', self)
+        self.SelectFile_btn = QPushButton('Select folder', self)
         self.SelectFile_btn.clicked.connect(self.fileopen)
-        
+        self.Collect_btn = QPushButton('Start collecting', self)
+        self.Collect_btn.clicked.connect(self.Start_collect)
         
         # label1 = QLabel('Label1', self)
         # label1.move(20, 20)
@@ -114,7 +132,8 @@ class MyApp(QWidget):
         self.MainTab_layout.addWidget(self.ParserExecTime_textbox, 5, 1)
         self.MainTab_layout.addWidget(self.FilePath_textbox, 6, 0)
         self.MainTab_layout.addWidget(self.SelectFile_btn, 6, 1)
-        self.MainTab_layout.addWidget(self.log_textbox, 7, 0, 1, 2)
+        self.MainTab_layout.addWidget(self.Collect_btn, 7, 0, 1, 2)
+        self.MainTab_layout.addWidget(self.log_textbox, 8, 0, 1, 2)
         
         
         
@@ -122,17 +141,19 @@ class MyApp(QWidget):
         self.setGeometry(300, 300, 500, 500)
         self.show()
         
-        
-        
     def fileopen(self):
+        global folder
         folder = QFileDialog.getExistingDirectory(self, "Select Directory")
         self.FilePath_textbox.setText(folder)
+        
+    def Start_collect(self):
         self.Parsing(folder)
-    
     
     def initParser(self):
         self.HostInfo_textbox.setText(str(socket.gethostname()))
         self.Account_textbox.setText(str(os.getlogin()))
+        
+        #이 부분이 로그인한 계정으로 되기 떄문에 관리자 권한으로 실행시켜도 알람이 뜸. 이 부분 해결을 어떻게 해야 할지 찾아야 함.
         if(str(os.getlogin()) != 'administrator'):
             QMessageBox.question(self, 'Message', 'Administrator privileges are recommended',
                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -143,97 +164,160 @@ class MyApp(QWidget):
         
     def Parsing(self, folder):
         users = os.listdir(r'C:\Users')
-
+        
         for user in users:
-            try:
-                if os.path.isdir('C:\\Users\\'+user):
-                    self.log_textbox.append('Collect ' + user + ' artifact')
-                    self.Browser(user,folder)
-                    self.FileSystem('C:', folder)
-                    
-                    self.log_textbox.append('')
-            except Exception as ex:
-                self.log_textbox.append(str(ex))
+            if not os.path.isdir('C:/Users/' + user):
+                users.remove(user)
         
-        
-    def Browser(self, user, folder):
-        self.log_textbox.append('[*] Collect browser artifact')
-        self.Chrome(user, folder)
-        
-        
-    def Chrome(self, user, folder):
-        path = 'C:/Users/'+user
-        self.log_textbox.append("[*] Chrome Browser artifact Collecting...")
-        check = os.path.isdir(path+"/AppData/Local/Google")
-    
-        if check == False:
-            self.log_textbox.append("[!] Not Found Chrome Path... Default Path is not valid")
-            self.log_textbox.append("[!] Default path is " + path + "/AppData/Local/Google")
-            
-        else:
-            self.log_textbox.append("[!] Chrome Directory Path: "+path+"/AppData/Local/Google")
-            self.log_textbox.append("[+] Chrome History, Cache, Cookies, Download List Copying...")
-
-            history = path+"/AppData/Local/Google/Chrome/User Data/Default/History"
-            cookies = path+"/AppData/Local/Google/Chrome/User Data/Default/Cookies"
-            cache = path+"/AppData/Local/Google/Chrome/User Data/Default/Cache/"
-            
-            CopyFile(history, folder + '/' +user + "/History")
-            CopyFile(cookies, folder + '/' +user + "/Cookies")
-            CopyDirectory(cache, folder + '/' +user + "/Cache")
-            
-            
-    def Registry(self, path, folder):  #레지스트리 내용 수집(SAM, SECURITY, SOFTWARE, SYSTEM, DEFAULT, NTUSER.DAT)
         try:
-            self.log_textbox.append("[*] Registry artifact Collecting...")
-            registry_path = "C:\Windows\System32\config"
-            check = os.path.isdir(registry_path)
-            if check == False :
-                self.log_textbox.append("[!] Not Found registry Path.... Default Path is not valid")
-            else :
-                self.log_textbox.append("[!] Registry Directory Path : " + registry_path)
-            self.log_textbox.append("[+] Registry Copying...")
+            # self.FileSystem('C:', folder)
+            self.Browser(folder, users)
+            # self.Registry(folder) -> 미완성 
+            # self.File_create_open(folder, users)
+            # self.program_start(folder)
+            # self.user_account(folder, users)
+            # self.continuous_execution(folder, users)
+            # # self.TimeLine(folder, users) -> 미완성
+            
+            # self.WindowsDefender(folder)
+            # self.WER(folder)
+            # self.Recycle(folder)
+            self.con.close()
+            self.log_textbox.append('Done')
+        except Exception as ex:
+            self.log_textbox.append(str(ex))
     
-            CopyFile(registry_path+"\SAM", folder + '/Registry')
-            CopyFile(registry_path+"\SECURITY", folder + '/Registry')
-            CopyFile(registry_path+"\SOFTWARE", folder + '/Registry')
-            CopyFile(registry_path+"\SYSTEM", folder + '/Registry')
-            CopyFile(registry_path+"\DEFAULT", folder + '/Registry')
-            CopyFile(path+"\\NTUSER.DAT", folder + '/Registry')
-                     
+        
+    def Browser(self, folder, users): # 계정별
+        try:
+            self.log_textbox.append('[*] Collect browser artifact')
+            self.Chrome(folder, users)
+            self.Edge(folder, users)
+            self.Ie(folder, users)
+        except Exception as ex:
+            self.log_textbox.append(str(ex))
+        
+    def Chrome(self, folder, users): # 계정별
+        try:
+            for user in users:
+                path = 'C:/Users/'+user
+                self.log_textbox.append("[*] Chrome Browser artifact Collecting...")
+                
+                self.log_textbox.append("[+] Chrome History, Cache, Cookies, Download List Copying...")
+                
+                check = os.path.isdir(path+"/AppData/Local/Google")
+                if check == False:
+                    self.log_textbox.append("[!] Not Found Chrome Path... Default Path is "+ path + "/AppData/Local/Google")
+                else:
+                    self.log_textbox.append("[!] Chrome Directory Path: "+path+"/AppData/Local/Google")
+                
+                    history = path+"/AppData/Local/Google/Chrome/User Data/Default/History"
+                    cookies = path+"/AppData/Local/Google/Chrome/User Data/Default/Cookies"
+                    cache = path+"/AppData/Local/Google/Chrome/User Data/Default/Cache/"
+                    
+                    self.CopyFile(history, folder + '/' +user + "/History")
+                    self.CopyFile(cookies, folder + '/' +user + "/Cookies")
+                    self.CopyDirectory(cache, folder + '/' +user + "/Cache")
         except Exception as ex:
             self.log_textbox.append(str(ex))
             
-            
-    def File_create_open(self, path, folder): # 파일 열기 및 생성 관련 아티팩트 
+    def Edge(self, folder, users): # 계정별
         try:
-            self.log_textbox.append("[*] Collecting artifacts related to file creation and opening...")
+            for user in users:
+                path = 'C:/Users/'+user
+                self.log_textbox.append("[*] Edge Browser artifact Collecting...")
+                
+                check = os.path.isdir(path+"/AppData/Local/Microsoft/Edge")
+                if check == False:
+                    self.log_textbox.append("[!] Not Found Edge Path... Default Path is"+ path + "/AppData/Local/Microsoft/Edge")
+                else:
+                    self.log_textbox.append("[!] Edge Directory Path: " + path + "/AppData/Local/Microsoft/Edge")
+                    self.log_textbox.append("[+] Edge History, Cache, Cookies, Download List Copying...")
             
-            RecentDocs_path = path+"\AppData\Roaming\Microsoft\Windows\Recent"
-            HWPRecentFiles_path = path+"\AppData\Roaming\HNC\Office\Recent"
-            OfficeRecentFiles_path = path+"\AppData\Roaming\Microsoft\Office\Recent"
-            LNKFiles_path = path+"\AppData\Roaming\Microsoft\Windows\Recent"
-            Jumplist_path = path+"\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations"
-    
-    
-            self.log_textbox.append("[+] Start copying artifacts related to file creation and opening...")
+                    history = path+"/AppData/Local/Microsoft/Edge/User Data/Default/History"
+                    cookies = path+"/AppData/Local/Microsoft/Edge/User Data/Default/Cookies"
+                    cache = path+"/AppData/Local/Microsoft/Edge/User Data/Default/Cache/"
             
-            self.log_textbox.append("[+] Start copying RecentDocs...")
-            CopyDirectory(RecentDocs_path, folder + "/File_create_open/RecentDocs")
-            self.log_textbox.append("[+] Start copying OfficeRecentFiles...")
-            CopyDirectory(OfficeRecentFiles_path, folder + "/File_create_open/OfficeRecentFiles") 
-            self.log_textbox.append("[+] Start copying HWPRecentFiles...")
-            CopyDirectory(HWPRecentFiles_path, folder + "/File_create_open/HWPRecentFiles") 
-            self.log_textbox.append("[+] Start copying LNKFiles...")
-            CopyDirectory(LNKFiles_path, folder + "/File_create_open/LNKFiles") 
-            self.log_textbox.append("[+] Start copying Jumplist...")
-            CopyDirectory(Jumplist_path, folder + "/File_create_open/Jumplist") 
+                    self.CopyFile(history, folder + '/' + user + "/Edge/History")
+                    self.CopyFile(cookies, folder + '/' + user + "/Edge/Cookies")
+                    self.CopyDirectory(cache, folder +  '/' + user + "/Edge/Cache")
+        except Exception as ex:
+            self.log_textbox.append(str(ex))
+    
+    def Ie(self, folder,  users): # 계정별 
+        try:
+            for user in users:
+                path = 'C:/Users/'+user
+                self.log_textbox.append("[*] IE Browser artifact Collecting...")
+                
+                self.log_textbox.append("[+] IE History, Cache, Cookies, Download List Copying...")
+                
+                history = 'C:\\Users\\{}\\AppData\\Local\\Microsoft\\Windows\\WebCache\\WebCacheV*.dat'.format(user)
+                cookies = path+"/AppData/Local/Microsoft/Windows/INetCookies/"
+                cache = path+"/AppData/Local/Microsoft/Windows/INetCache/IE/"
+                downlist = path+"/AppData/Local/Microsoft/Windows/IEDownloadHistory/"
+        
+                self.CopyDirectory(cookies, folder +  '/' + user + "/IE/Cookies")
+                self.CopyDirectory(cache, folder +  '/' + user + "/IE/Cache")    
+                self.CopyDirectory(downlist, folder +  '/' + user + "/IE/DownloadList")
+        
+                # WebCacheV*.dat 파일 COPY
+                # os.system('taskkill /f /im taskhostw.exe')
+                # os.system('taskkill /f /im dllhost.exe')   
+                # copyPath = folder +  '/' + user + '/IE/History'
+                # command = 'xcopy /s /h /i /y "{0}" {1}'.format(history,copyPath) 
+                # os.system(command)
+        except Exception as ex:
+            self.log_textbox.append(str(ex))
+    
+    def Registry(self, folder):  #레지스트리 내용 수집(SAM, SECURITY, SOFTWARE, SYSTEM, DEFAULT, NTUSER.DAT) 계정별 X, 실패하셨다고 함.
+        try:
+            self.log_textbox.append("[*] Registry artifact Collecting...")
+            registry_path = "C:\Windows\System32\config"
+            
+            self.log_textbox.append("[+] Registry Copying...")
+    
+            self.CopyFile(registry_path+"\SAM", folder + '/Registry/SAM')
+            self.CopyFile(registry_path+"\SECURITY", folder + '/Registry/SECURITY')
+            self.CopyFile(registry_path+"\SOFTWARE", folder + '/Registry/SOFTWARE')
+            self.CopyFile(registry_path+"\SYSTEM", folder + '/Registry/SYSTEM')
+            self.CopyFile(registry_path+"\DEFAULT", folder + '/Registry/DEFAULT')
+            self.CopyFile(path+"\\NTUSER.DAT", folder + '/Registry/NTUSER.DAT')
+            
+        except Exception as ex:
+            self.log_textbox.append(str(ex))
+            
+    def File_create_open(self, folder, users): # 파일 열기 및 생성 관련 아티팩트 싹다 계정별
+        try:
+            for user in users:
+                path = 'C:/Users/'+user
+                
+                self.log_textbox.append("[*] Collecting artifacts related to file creation and opening...")
+                
+                RecentDocs_path = path+"\AppData\Roaming\Microsoft\Windows\Recent"
+                HWPRecentFiles_path = path+"\AppData\Roaming\HNC\Office\Recent"
+                OfficeRecentFiles_path = path+"\AppData\Roaming\Microsoft\Office\Recent"
+                LNKFiles_path = path+"\AppData\Roaming\Microsoft\Windows\Recent"
+                Jumplist_path = path+"\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations"
+        
+        
+                self.log_textbox.append("[+] Start copying artifacts related to file creation and opening...")
+                
+                self.log_textbox.append("[+] Start copying RecentDocs...")
+                self.CopyDirectory(RecentDocs_path, folder + '/' + user + "/File_create_open/RecentDocs")
+                self.log_textbox.append("[+] Start copying OfficeRecentFiles...")
+                self.CopyDirectory(OfficeRecentFiles_path, folder + '/' + user + "/File_create_open/OfficeRecentFiles") 
+                self.log_textbox.append("[+] Start copying HWPRecentFiles...")
+                self.CopyDirectory(HWPRecentFiles_path, folder + '/' + user + "/File_create_open/HWPRecentFiles") 
+                self.log_textbox.append("[+] Start copying LNKFiles...")
+                self.CopyDirectory(LNKFiles_path, folder + '/' + user + "/File_create_open/LNKFiles") 
+                self.log_textbox.append("[+] Start copying Jumplist...")
+                self.CopyDirectory(Jumplist_path, folder + '/' + user + "/File_create_open/Jumplist") 
              
         except Exception as ex:
             self.log_textbox.append(ex)
-            
         
-    def program_start(self, path, folder) : # 프로그램 실행
+    def program_start(self, folder) : # 프로그램 실행 관련, 계정별 아티팩트 X
         try:
             self.log_textbox.append("[*] Collecting artifacts related to program execution...")
             
@@ -243,63 +327,74 @@ class MyApp(QWidget):
     
             self.log_textbox.append("[+] Copying artifacts related to program execution...")
             
-            CopyDirectory(prefetch_path, folder + "/program_start/prefetch")
-            CopyFile(psevent_ptah+"\Microsoft-Windows-PowerShell%4Operational.evtx", folder + "/program_start/PowerShell Event") 
-            CopyFile(Amcache_path+"\Amcache.hve", folder + "/program_start/Amcache")
+            self.CopyDirectory(prefetch_path, folder + "/program_start/prefetch")
+            self.CopyFile(psevent_ptah+"\Microsoft-Windows-PowerShell%4Operational.evtx", folder + "/program_start/PowerShell Event") 
+            # self.CopyFile(Amcache_path+"\Amcache.hve", folder + "/program_start/Amcache") -> 미완성
             
         except Exception as ex:
             self.log_textbox.append(ex)
 
-    def user_account(self, path, folder) : # 계정 사용 
+    def user_account(self, folder, users): # RDP evt -> 계정별로 남음
         try:
             self.log_textbox.append("[*] Collecting artifacts related to user account...")
             
             SuccesEvt_path = "C:/Windows/System32/winevt/Logs"
             RDPEvt_path = "C:/Windows/System32/winevt/Logs"  # System.evtx 찾기 위한 경로
-            RDPEvtcache_path = path+"/AppData/Local/Microsoft/Terminal Server Client/Cache" #Microsoft\Terminal Server Client\Cache 경로
-                            
+            
             self.log_textbox.append("[+] Copying artifacts related to user account...")
             
-            CopyFile(SuccesEvt_path+"/Security.evtx", folder + "/user_account/Succes Fail Logons")
-            CopyFile(RDPEvt_path+"/System.evtx", folder + "/user_account/RDP Usage")
-            CopyDirectory(RDPEvtcache_path, folder + "/user_account/RDP Usage/Cache")
+            self.CopyFile(SuccesEvt_path+"/Security.evtx", folder + "/user_account/Succes Fail Logons")
+            self.CopyFile(RDPEvt_path+"/System.evtx", folder + "/user_account/RDP Usage")
+            for user in users:
+                path = 'C:/Users/' + user
+                
+                RDPEvtcache_path = path+"/AppData/Local/Microsoft/Terminal Server Client/Cache" #Microsoft\Terminal Server Client\Cache 경로
+                
+                self.CopyDirectory(RDPEvtcache_path, folder + '/' + user + "/user_account/RDP Usage/Cache")
             
         except Exception as ex:
             self.log_textbox.append(ex)
-    
 
-    def continuous_execution(self, path, folder) : # 지속실행 등록
+    def continuous_execution(self, folder, users) : # 지속실행 등록 계정 사용 X
         try:
             self.log_textbox.append("[*] Collecting artifacts related to continuous execution...")
             
-            Startup_path = path+"\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"  # 시작 프로그램 경로
             Scheduler_path = "C:\Windows\System32\Tasks"  # 스케줄러 폴더 경로(Tasks)
             SystemTime_path = "C:\Windows\System32\winevt\Logs"  # System.evtx 찾기 위한 경로
-    
+            
             self.log_textbox.append("[+] Copying artifacts related to continuous execution...")
             
-            CopyDirectory(Startup_path, folder + "/continuous execution/Startup") 
-            CopyDirectory(Scheduler_path, folder + "/continuous execution/Scheduler") 
-            CopyFile(SystemTime_path+"\Security.evtx", folder + "/continuous execution/System Time") 
-            CopyFile(SystemTime_path+"\System.evtx", folder + "/continuous execution/System Time")
-     
+            self.CopyDirectory(Scheduler_path, folder + "/continuous execution/Scheduler") 
+            self.CopyFile(SystemTime_path+"\Security.evtx", folder + "/continuous execution/System Time") 
+            self.CopyFile(SystemTime_path+"\System.evtx", folder + "/continuous execution/System Time")
+            
+            for user in users:
+                path = 'C:/Users/' + user
+                
+                Startup_path = path+"\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"  # 시작 프로그램 경로
+                self.CopyDirectory(Startup_path, folder + "/continuous execution/Startup") 
+                
+            
         except Exception as ex:
-            self.log_textbox.append(ex)
+            self.log_textbox.append(str(ex))
             
-            
-    def TimeLine(self, path, folder) :
+    def TimeLine(self, folder, users) : # 계정별로 남음, 아직 성공 못하셨다고 함.
         try:
             self.log_textbox.append("[*] TimeLine artifact Collecting...")
-            timeline_path = path+"/AppData/Local/ConnectedDevicesPlatform/388c4b714cf9ab22"
-
-            self.log_textbox.append("[+] TimeLine Copying...")
-                  
-            CopyDirectory(timeline_path, folder + "/TimeLine") # 폴더 통채로 복사 , shutil.copy2()는 파일 한개 복사
-                    
+            
+            for user in users:
+                path = 'C:/Users/' + user
+                
+                timeline_path = path+"/AppData/Local/ConnectedDevicesPlatform/388c4b714cf9ab22"
+                
+                self.log_textbox.append("[+] TimeLine Copying...")
+                          
+                self.CopyDirectory(timeline_path, folder + '/' + user + "/TimeLine") # 폴더 통채로 복사 , shutil.copy2()는 파일 한개 복사
+                
         except Exception as ex:
             self.log_textbox.append(ex)
 
-    def  WindowsDefender(self, path, folder) : # Windows Defender 수집
+    def  WindowsDefender(self, folder) : # Windows Defender 수집 계정별 X
         try:
             self.log_textbox.append("[*] Windows Defender artifact Collecting...")
     
@@ -307,42 +402,38 @@ class MyApp(QWidget):
 
             self.log_textbox.append("[+] Windows Defender Copying...")
                   
-            CopyDirectory(WinDefender_path, folder + "/Windows Defender") # 폴더 통채로 복사 , shutil.copy2()는 파일 한개 복사
+            self.CopyDirectory(WinDefender_path, folder + "/Windows Defender") # 폴더 통채로 복사 , shutil.copy2()는 파일 한개 복사
                     
         except Exception as ex:
             self.log_textbox.append(ex)      
 
-  
-    
-    def WER(self, path, folder) : #WER(Windows Error Reporting) 수집
+    def WER(self, folder) : #WER(Windows Error Reporting) 수집 계정별 X
         try:
             self.log_textbox.append("[*] WER artifact Collecting...")
-    
+            
             WER_path = "C:/ProgramData/Microsoft/Windows/WER"  # System.evtx 찾기 위한 경로
-    
+            
             self.log_textbox.append("[+] WER Copying...")
                   
-            CopyDirectory(WER_path, folder + "/WER") 
+            self.CopyDirectory(WER_path, folder + "/WER") 
                     
         except Exception as ex:
             self.log_textbox.append(ex)      
     
-    
-    def Recycle(self, path, folder) : #Recycle 수집
+    def Recycle(self, folder) : #Recycle 수집, 계정별 X
         try:
             self.log_textbox.append("[*] Recycle artifact Collecting...")
-    
-            Recycle_path = "C:/$Recycle.Bin"  
-
+            
+            Recycle_path = "C:/$Recycle.Bin"
+            
             self.log_textbox.append("[+] Recycle Copying...")
                   
-            CopyDirectory(Recycle_path, folder + "/RecycleBin") 
+            self.CopyDirectory(Recycle_path, folder + "/RecycleBin") 
                     
         except Exception as ex:
             self.log_textbox.append(ex)     
 
-
-    def FileSystem(self, drive, folder):
+    def FileSystem(self, drive, folder): # 계정별 X
         self.log_textbox.append('[*] Collect filesystem artifact of '+ drive + ' drive')
         
         volume='\\\\.\\' + drive #드라이브
@@ -389,8 +480,6 @@ class MyApp(QWidget):
         except Exception as ex:
             self.log_textbox.append('[!] Error occured while collecting $UsnJrnl')
         
-        
-        
     def Extract(self, filename, folder, fs):
         try:
             f=fs.open(filename)
@@ -408,7 +497,6 @@ class MyApp(QWidget):
             self.log_textbox.append('[!] Error occured while collecting '+ filename)
             self.log_textbox.append(str(ex))
         
-        
     def CopyFile(self, src, dst):
         try:
             if not os.path.isfile(src):
@@ -417,9 +505,38 @@ class MyApp(QWidget):
                 self.Create(dst)
                 self.log_textbox.append('[+] Start copying file from ' + src + ' to ' + dst)
                 shutil.copy2(src, dst)
+                self.insert_db(src)
         except Exception as ex:
             self.log_textbox.append('[!] File copy failed')
             self.log_textbox.append(str(ex))
+    
+    def insert_db(self, file):
+        try:
+            pass
+            # # artname, artpath, artMtime, artAtime, artCtime, artsize, artmd5, artsha1
+            # # INSERT INTO stocks VALUES ('2006-01-05','BUY','RHAT',100,35.14)
+            # # 'INSERT INTO ArtMD VALUES ({0},{1},{2},{3},{4},{5},{6},{7})'.format(artname,)
+            # # artname -> 
+            
+            
+            # if file.find('\\') != -1:
+            #     artname = file.split('\\')[-1]
+            # else:
+            #     artname = file.split('/')[-1]
+            
+            # print('artname : ' + artname)
+            
+            
+            # file_md5 = hashlib.md5().hexdigest()
+            # file_sha1 = hashlib.sha1().hexdigest()
+            
+            # self.cur.execute('INSERT INTO ArtMD (artname, artpath, artMtime, artAtime, artCtime, artsize, artmd5, artsha1) VALUES ({0},{1},{2},{3},{4},{5},{6},{7})'.format(artname, file, os.path.getctime(file)
+            #                                                                                      , os.path.getatime(file), os.path.getctime(file)
+            #                                                                      , Path(file).stat().st_size, file_md5, file_sha1))
+            # self.con.commit()
+            
+        except Exception as ex:
+            self.log_textbox.append(str(ex))    
             
     
     def CopyDirectory(self, src, dst):
@@ -435,15 +552,41 @@ class MyApp(QWidget):
             self.log_textbox.append(str(ex))
         
     def Create(self, folder):
-        if not os.path.isdir(folder):
-            self.log_textbox.append('[!] ' + folder + ' does not exist, create folder')
-            os.mkdir(folder)
-        
-        
-        
-        
-        
-        
+        if folder.find('\\') != -1:
+            url = folder.split('\\')
+        else:
+            url = folder.split('/')
+        target = ''
+        try:
+            for i in range(len(url)):
+                target = ""
+                for j in range(i+1):
+                    target += str(url[j])
+                    target += '/'
+                
+                if not os.path.isdir(target):
+                    os.mkdir(target)
+            
+        except Exception as ex:
+            self.log_textbox.append(str(ex))
+
+    
+    def create_db(self):
+        try:
+            self.cur.execute("CREATE TABLE PCinfo (id INTEGER PRIMARY KEY AUTOINCREMENT, Hostname varchar, account varchar, \
+            OSversion varchar, OSbootime datetime, Runtime datetime)")
+            self.con.commit()
+            self.cur.execute("CREATE TABLE ArtMD (artid INTEGER PRIMARY KEY AUTOINCREMENT, artname varchar not null, \
+            artpath varchar not null, artMtime datetime not null, artAtime datetime not null, \
+            artCtime datetime not null, artsize varchar not null, artmd5 varchar not null, artsha1 varchar not null)")
+            self.con.commit()
+            self.cur.execute("CREATE TABLE Usecase (fileid INTEGER PRIMARY KEY AUTOINCREMENT, filename varchar not null, \
+            filepath varchar not null, fileMtime datetime not null, fileAtime datetime not null, \
+            fileCtime datetime not null, filesize varchar not null, filemd5 varchar not null, filesha1 datetime not null)")
+            self.con.commit()
+        except Exception as ex:
+            print(ex)
+            
         
 
 if __name__ == '__main__':
