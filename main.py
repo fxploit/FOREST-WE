@@ -167,7 +167,7 @@ class MyApp(QWidget):
         check = os.path.isdir(path+"/AppData/Local/Google")
     
         if check == False:
-            self.log_textbox.append("[!] Not Found Chrome Path... Default Path is invalid")
+            self.log_textbox.append("[!] Not Found Chrome Path... Default Path is not valid")
             self.log_textbox.append("[!] Default path is " + path + "/AppData/Local/Google")
             
         else:
@@ -181,6 +181,165 @@ class MyApp(QWidget):
             CopyFile(history, folder + '/' +user + "/History")
             CopyFile(cookies, folder + '/' +user + "/Cookies")
             CopyDirectory(cache, folder + '/' +user + "/Cache")
+            
+            
+    def Registry(self, path, folder):  #레지스트리 내용 수집(SAM, SECURITY, SOFTWARE, SYSTEM, DEFAULT, NTUSER.DAT)
+        try:
+            self.log_textbox.append("[*] Registry artifact Collecting...")
+            registry_path = "C:\Windows\System32\config"
+            check = os.path.isdir(registry_path)
+            if check == False :
+                self.log_textbox.append("[!] Not Found registry Path.... Default Path is not valid")
+            else :
+                self.log_textbox.append("[!] Registry Directory Path : " + registry_path)
+            self.log_textbox.append("[+] Registry Copying...")
+    
+            CopyFile(registry_path+"\SAM", folder + '/Registry')
+            CopyFile(registry_path+"\SECURITY", folder + '/Registry')
+            CopyFile(registry_path+"\SOFTWARE", folder + '/Registry')
+            CopyFile(registry_path+"\SYSTEM", folder + '/Registry')
+            CopyFile(registry_path+"\DEFAULT", folder + '/Registry')
+            CopyFile(path+"\\NTUSER.DAT", folder + '/Registry')
+                     
+        except Exception as ex:
+            self.log_textbox.append(str(ex))
+            
+            
+    def File_create_open(self, path, folder): # 파일 열기 및 생성 관련 아티팩트 
+        try:
+            self.log_textbox.append("[*] Collecting artifacts related to file creation and opening...")
+            
+            RecentDocs_path = path+"\AppData\Roaming\Microsoft\Windows\Recent"
+            HWPRecentFiles_path = path+"\AppData\Roaming\HNC\Office\Recent"
+            OfficeRecentFiles_path = path+"\AppData\Roaming\Microsoft\Office\Recent"
+            LNKFiles_path = path+"\AppData\Roaming\Microsoft\Windows\Recent"
+            Jumplist_path = path+"\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations"
+    
+    
+            self.log_textbox.append("[+] Start copying artifacts related to file creation and opening...")
+            
+            self.log_textbox.append("[+] Start copying RecentDocs...")
+            CopyDirectory(RecentDocs_path, folder + "/File_create_open/RecentDocs")
+            self.log_textbox.append("[+] Start copying OfficeRecentFiles...")
+            CopyDirectory(OfficeRecentFiles_path, folder + "/File_create_open/OfficeRecentFiles") 
+            self.log_textbox.append("[+] Start copying HWPRecentFiles...")
+            CopyDirectory(HWPRecentFiles_path, folder + "/File_create_open/HWPRecentFiles") 
+            self.log_textbox.append("[+] Start copying LNKFiles...")
+            CopyDirectory(LNKFiles_path, folder + "/File_create_open/LNKFiles") 
+            self.log_textbox.append("[+] Start copying Jumplist...")
+            CopyDirectory(Jumplist_path, folder + "/File_create_open/Jumplist") 
+             
+        except Exception as ex:
+            self.log_textbox.append(ex)
+            
+        
+    def program_start(self, path, folder) : # 프로그램 실행
+        try:
+            self.log_textbox.append("[*] Collecting artifacts related to program execution...")
+            
+            prefetch_path = "C:/Windows/Prefetch"
+            psevent_ptah = "C:/Windows/System32/winevt/Logs"
+            Amcache_path = "C:/Windows/appcompat/Programs"
+    
+            self.log_textbox.append("[+] Copying artifacts related to program execution...")
+            
+            CopyDirectory(prefetch_path, folder + "/program_start/prefetch")
+            CopyFile(psevent_ptah+"\Microsoft-Windows-PowerShell%4Operational.evtx", folder + "/program_start/PowerShell Event") 
+            CopyFile(Amcache_path+"\Amcache.hve", folder + "/program_start/Amcache")
+            
+        except Exception as ex:
+            self.log_textbox.append(ex)
+
+    def user_account(self, path, folder) : # 계정 사용 
+        try:
+            self.log_textbox.append("[*] Collecting artifacts related to user account...")
+            
+            SuccesEvt_path = "C:/Windows/System32/winevt/Logs"
+            RDPEvt_path = "C:/Windows/System32/winevt/Logs"  # System.evtx 찾기 위한 경로
+            RDPEvtcache_path = path+"/AppData/Local/Microsoft/Terminal Server Client/Cache" #Microsoft\Terminal Server Client\Cache 경로
+                            
+            self.log_textbox.append("[+] Copying artifacts related to user account...")
+            
+            CopyFile(SuccesEvt_path+"/Security.evtx", folder + "/user_account/Succes Fail Logons")
+            CopyFile(RDPEvt_path+"/System.evtx", folder + "/user_account/RDP Usage")
+            CopyDirectory(RDPEvtcache_path, folder + "/user_account/RDP Usage/Cache")
+            
+        except Exception as ex:
+            self.log_textbox.append(ex)
+    
+
+    def continuous_execution(self, path, folder) : # 지속실행 등록
+        try:
+            self.log_textbox.append("[*] Collecting artifacts related to continuous execution...")
+            
+            Startup_path = path+"\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"  # 시작 프로그램 경로
+            Scheduler_path = "C:\Windows\System32\Tasks"  # 스케줄러 폴더 경로(Tasks)
+            SystemTime_path = "C:\Windows\System32\winevt\Logs"  # System.evtx 찾기 위한 경로
+    
+            self.log_textbox.append("[+] Copying artifacts related to continuous execution...")
+            
+            CopyDirectory(Startup_path, folder + "/continuous execution/Startup") 
+            CopyDirectory(Scheduler_path, folder + "/continuous execution/Scheduler") 
+            CopyFile(SystemTime_path+"\Security.evtx", folder + "/continuous execution/System Time") 
+            CopyFile(SystemTime_path+"\System.evtx", folder + "/continuous execution/System Time")
+     
+        except Exception as ex:
+            self.log_textbox.append(ex)
+            
+            
+    def TimeLine(self, path, folder) :
+        try:
+            self.log_textbox.append("[*] TimeLine artifact Collecting...")
+            timeline_path = path+"/AppData/Local/ConnectedDevicesPlatform/388c4b714cf9ab22"
+
+            self.log_textbox.append("[+] TimeLine Copying...")
+                  
+            CopyDirectory(timeline_path, folder + "/TimeLine") # 폴더 통채로 복사 , shutil.copy2()는 파일 한개 복사
+                    
+        except Exception as ex:
+            self.log_textbox.append(ex)
+
+    def  WindowsDefender(self, path, folder) : # Windows Defender 수집
+        try:
+            self.log_textbox.append("[*] Windows Defender artifact Collecting...")
+    
+            WinDefender_path = "C:/ProgramData/Microsoft/Windows Defender/Scans/History/Service/DetectionHistory"  # Windows Defender 관련 폴더 경로
+
+            self.log_textbox.append("[+] Windows Defender Copying...")
+                  
+            CopyDirectory(WinDefender_path, folder + "/Windows Defender") # 폴더 통채로 복사 , shutil.copy2()는 파일 한개 복사
+                    
+        except Exception as ex:
+            self.log_textbox.append(ex)      
+
+  
+    
+    def WER(self, path, folder) : #WER(Windows Error Reporting) 수집
+        try:
+            self.log_textbox.append("[*] WER artifact Collecting...")
+    
+            WER_path = "C:/ProgramData/Microsoft/Windows/WER"  # System.evtx 찾기 위한 경로
+    
+            self.log_textbox.append("[+] WER Copying...")
+                  
+            CopyDirectory(WER_path, folder + "/WER") 
+                    
+        except Exception as ex:
+            self.log_textbox.append(ex)      
+    
+    
+    def Recycle(self, path, folder) : #Recycle 수집
+        try:
+            self.log_textbox.append("[*] Recycle artifact Collecting...")
+    
+            Recycle_path = "C:/$Recycle.Bin"  
+
+            self.log_textbox.append("[+] Recycle Copying...")
+                  
+            CopyDirectory(Recycle_path, folder + "/RecycleBin") 
+                    
+        except Exception as ex:
+            self.log_textbox.append(ex)     
 
 
     def FileSystem(self, drive, folder):
@@ -196,15 +355,15 @@ class MyApp(QWidget):
         self.Extract_UsnJrnl(folder, fs)
     
     def MFT(self, folder, fs):
-        self.log_textbox.append('[*] Collect $MFT')
+        self.log_textbox.append('[+] Collect $MFT')
         self.Extract('/$MFT', folder, fs)
         
     def LogFile(self, folder, fs):
-        self.log_textbox.append('[*] Collect $LogFile')
+        self.log_textbox.append('[+] Collect $LogFile')
         self.Extract('/$LogFile', folder, fs)
         
     def Extract_UsnJrnl(self, folder, fs):
-        self.log_textbox.append('[*] Collect $UsnJrnl')
+        self.log_textbox.append('[+] Collect $UsnJrnl')
         try:
             f=fs.open('/$Extend/$UsnJrnl')
             found=False
@@ -216,7 +375,7 @@ class MyApp(QWidget):
             if not found:
                 self.log_textbox.append('[!] $UsnJrnl not found')
             else:
-                self.log_textbox.append('[*] $UsnJrnl exists, start copying')
+                self.log_textbox.append('[+] $UsnJrnl exists, start copying')
                 with open(folder + '/$UsnJrnl','wb') as o:
                     offset=0
                     size=attr.info.size
@@ -236,7 +395,7 @@ class MyApp(QWidget):
         try:
             f=fs.open(filename)
             with open(folder + filename,'wb') as o:
-                self.log_textbox.append('[*] ' + filename + ' exists, start copying')
+                self.log_textbox.append('[+] ' + filename + ' exists, start copying')
                 offset = 0
                 size = f.info.meta.size
                 while offset<size:
@@ -251,25 +410,34 @@ class MyApp(QWidget):
         
         
     def CopyFile(self, src, dst):
-        if not os.path.isfile(src):
-            self.log_textbox.append('[!] ' + src + ' doen not exist')
-        else:
-            self.Create(dst)
-            self.log_textbox.append('[*] Start copying file from ' + src + ' to ' + dst)
-            shutil.copy2(src, dst)
+        try:
+            if not os.path.isfile(src):
+                self.log_textbox.append('[!] ' + src + ' doen not exist')
+            else:
+                self.Create(dst)
+                self.log_textbox.append('[+] Start copying file from ' + src + ' to ' + dst)
+                shutil.copy2(src, dst)
+        except Exception as ex:
+            self.log_textbox.append('[!] File copy failed')
+            self.log_textbox.append(str(ex))
             
     
     def CopyDirectory(self, src, dst):
-        self.Create(dst)
-        self.log_textbox.append('[*] Start copying directory from ' + src + ' to ' + dst)
-        copy_tree(src, dst)
-        
+        try:
+            if not os.path.isdir(src):
+                self.log_textbox.append('[!] ' + src + ' doen not exist')
+            else:
+                self.Create(dst)
+                self.log_textbox.append('[+] Start copying directory from ' + src + ' to ' + dst)
+                copy_tree(src, dst)
+        except Exception as ex:
+            self.log_textbox.append('[!] Directory copy failed')
+            self.log_textbox.append(str(ex))
         
     def Create(self, folder):
         if not os.path.isdir(folder):
             self.log_textbox.append('[!] ' + folder + ' does not exist, create folder')
             os.mkdir(folder)
-        
         
         
         
