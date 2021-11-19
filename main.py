@@ -15,7 +15,7 @@ import hashlib
 
 
 
-
+os.system('chcp 65001')
         
     
     
@@ -25,15 +25,21 @@ class MyApp(QWidget):
     def __init__(self):
         super().__init__()
         
-        if os.path.isfile('test2.db'):
-            os.remove('test2.db')
         
-        self.con = sqlite3.connect('test2.db')
+        
+        if os.path.isfile('test8.db'): os.remove('test8.db')
+        self.con = sqlite3.connect('test8.db')
         self.cur = self.con.cursor()
+        
         self.create_db()
         self.initUI()
-        self.initParser()
-
+        
+        host = self.initParser()
+        list(host)
+        self.cur.execute("INSERT INTO PCinfo (Hostname, account, OSversion, OSbootime, Runtime) VALUES (?, ?, ?, ?, ?)", (host[0], host[1], host[2], host[3], host[4]))
+        self.con.commit()
+        
+        
     def initUI(self):
         #layout settings : Grid Layout
         self.grid = QGridLayout()
@@ -150,17 +156,29 @@ class MyApp(QWidget):
         self.Parsing(folder)
     
     def initParser(self):
-        self.HostInfo_textbox.setText(str(socket.gethostname()))
-        self.Account_textbox.setText(str(os.getlogin()))
-        
-        #이 부분이 로그인한 계정으로 되기 떄문에 관리자 권한으로 실행시켜도 알람이 뜸. 이 부분 해결을 어떻게 해야 할지 찾아야 함.
-        if(str(os.getlogin()) != 'administrator'):
-            QMessageBox.question(self, 'Message', 'Administrator privileges are recommended',
-                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        
-        self.OSInfo_textbox.setText(str(platform.system()+platform.version()))
-        self.OSBootTime_textbox.setText(str(int(time.monotonic()/3600)))
-        self.ParserExecTime_textbox.setText(str(datetime.datetime.now()))
+        try:
+            Hostname = socket.gethostname()
+            account = os.getlogin()
+            OSversion = platform.system() + " " + platform.version()
+            OSbootime = time.monotonic()/3600
+            Runtime = datetime.datetime.now()
+            
+            
+            self.HostInfo_textbox.setText(str(Hostname))
+            self.Account_textbox.setText(str(account))
+            
+            #이 부분이 로그인한 계정으로 되기 떄문에 관리자 권한으로 실행시켜도 알람이 뜸. 이 부분 해결을 어떻게 해야 할지 찾아야 함.
+            if(str(account) != 'administrator'):
+                QMessageBox.question(self, 'Message', 'Administrator privileges are recommended',
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            
+            self.OSInfo_textbox.setText(str(OSversion))
+            self.OSBootTime_textbox.setText(str(OSbootime))
+            self.ParserExecTime_textbox.setText(str(Runtime))
+        except Exception as ex:
+            self.log_textbox.append(str(ex))
+            
+        return Hostname, account, OSversion, OSbootime, Runtime
         
     def Parsing(self, folder):
         users = os.listdir(r'C:\Users')
@@ -512,28 +530,20 @@ class MyApp(QWidget):
     
     def insert_db(self, file):
         try:
-            pass
             # # artname, artpath, artMtime, artAtime, artCtime, artsize, artmd5, artsha1
             # # INSERT INTO stocks VALUES ('2006-01-05','BUY','RHAT',100,35.14)
-            # # 'INSERT INTO ArtMD VALUES ({0},{1},{2},{3},{4},{5},{6},{7})'.format(artname,)
-            # # artname -> 
             
-            
-            # if file.find('\\') != -1:
-            #     artname = file.split('\\')[-1]
-            # else:
-            #     artname = file.split('/')[-1]
-            
-            # print('artname : ' + artname)
-            
-            
-            # file_md5 = hashlib.md5().hexdigest()
-            # file_sha1 = hashlib.sha1().hexdigest()
-            
-            # self.cur.execute('INSERT INTO ArtMD (artname, artpath, artMtime, artAtime, artCtime, artsize, artmd5, artsha1) VALUES ({0},{1},{2},{3},{4},{5},{6},{7})'.format(artname, file, os.path.getctime(file)
-            #                                                                                      , os.path.getatime(file), os.path.getctime(file)
-            #                                                                      , Path(file).stat().st_size, file_md5, file_sha1))
-            # self.con.commit()
+            artname = file.split('/')[-1]
+            print(artname)
+            artpath = file
+            artMtime = datetime.datetime.fromtimestamp(os.path.getmtime(file))
+            artAtime = datetime.datetime.fromtimestamp(os.path.getatime(file))
+            artCtime = datetime.datetime.fromtimestamp(os.path.getctime(file))
+            artsize = str(os.path.getsize(file)) + ' KB'
+            artmd5 = str(hashlib.md5(file).hexdigest())
+            artsha1 = str(hashlib.sha1(file).hexdigest())
+            self.cur.execute("INSERT INTO ArtMD (artname, artpath, artMtime, artAtime, artCtime, artsize, artmd5, artsha1) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",(artname, artpath, artMtime, artAtime, artCtime, artsize, artmd5, artsha1))
+            self.con.commit()
             
         except Exception as ex:
             self.log_textbox.append(str(ex))    
@@ -546,6 +556,10 @@ class MyApp(QWidget):
             else:
                 self.Create(dst)
                 self.log_textbox.append('[+] Start copying directory from ' + src + ' to ' + dst)
+                
+                for root, dirs, files in os.walk(src):
+                    for file in files:
+                        self.insert_db((root+file).replace('\\', '/'))
                 copy_tree(src, dst)
         except Exception as ex:
             self.log_textbox.append('[!] Directory copy failed')
@@ -585,9 +599,8 @@ class MyApp(QWidget):
             fileCtime datetime not null, filesize varchar not null, filemd5 varchar not null, filesha1 datetime not null)")
             self.con.commit()
         except Exception as ex:
-            print(ex)
+            self.log_textbox.append(str(ex))
             
-        
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
