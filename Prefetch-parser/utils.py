@@ -1,14 +1,3 @@
-# The code in the class below was taken and then modified from Francesco 
-# Picasso's w10pfdecomp.py script. This modification makes two simple changes:
-#
-#    - Wraps Francesco's logic in a Python class 
-#    - Returns a bytearray of uncompressed data instead of writing it to a new 
-#      file, like Francesco's original code did
-#
-# Author's name: Francesco "dfirfpi" Picasso
-# Author's email: francesco.picasso@gmail.com
-# Source: https://github.com/dfirfpi/hotoloti/blob/master/sas/w10pfdecomp.py
-# License: http://www.apache.org/licenses/LICENSE-2.0
 
 
 import sys
