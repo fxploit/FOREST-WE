@@ -134,7 +134,7 @@ def insert_Registry_Command(dbname, args):
 
 def insert_Registry_Services(dbname, args):
     query_execute(dbname, 'INSERT INTO Registry_Services (Name, BatchKeyPath, Description, BatchValueName, DisplayName, StartMode, ServiceType, NameKeyLastWrite, ParametersKeyLastWrite, _Group, ImagePath,\
-         ServiceDLL, RequiredPrivileges) VALUES(?,?,?,??,?,?,?,?,?,?,?,?)', args)
+         ServiceDLL, RequiredPrivileges) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', args)
 
 
 '''SELECT'''

@@ -90,8 +90,8 @@ def collect_command(dbname):
 def collect_services(module_dst_path, dbname):
     paths=[]
     files=[]
-    for root, dirs, files1 in os.walk(module_dst_path):
-        paths+=root
+    for root, dirs, files1 in os.walk(module_dst_path+'\\Registry'):
+        paths.append(root)
         for path in paths:
             files += glob.glob(root+'\\*_Services*')
     

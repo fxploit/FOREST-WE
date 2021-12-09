@@ -24,21 +24,21 @@ def collect_artifacts(target_src_path, target_dst_path, module_dst_path):
 # Merge multiple functions into one
 def collect(target_src_path, target_dst_path, module_dst_path, dbname):
     start = time.time()
-    # try:
-        # collect_artifacts(target_src_path, target_dst_path, module_dst_path)
-        # print('collect artifacts : '+str(time.time()-start))
-        # collect_eventlog.collect_eventlogs(module_dst_path, dbname)
-        # print('parsing eventlog : '+str(time.time()-start))
-        # collect_prefetch.collect_prefetchs(target_dst_path, dbname)
-        # print('parsing prefetch : '+str(time.time()-start))
-        # collect_ArtMD.collect_ArtMDs(target_dst_path, dbname)
-        # print('parsing ArtMD : '+str(time.time()-start))
-        # collect_Filesystem.collect_Filesystems(module_dst_path, dbname)
-        # print('parsing FileSystem : '+str(time.time()-start))
-    collect_registry.collect_registries(module_dst_path, dbname)
-    print('parsing registry : '+str(time.time()-start))
+    try:
+        collect_artifacts(target_src_path, target_dst_path, module_dst_path)
+        print('collect artifacts : '+str(time.time()-start))
+        collect_eventlog.collect_eventlogs(module_dst_path, dbname)
+        print('parsing eventlog : '+str(time.time()-start))
+        collect_prefetch.collect_prefetchs(target_dst_path, dbname)
+        print('parsing prefetch : '+str(time.time()-start))
+        collect_ArtMD.collect_ArtMDs(target_dst_path, dbname)
+        print('parsing ArtMD : '+str(time.time()-start))
+        collect_Filesystem.collect_Filesystems(module_dst_path, dbname)
+        print('parsing FileSystem : '+str(time.time()-start))
+        collect_registry.collect_registries(module_dst_path, dbname)
+        print('parsing registry : '+str(time.time()-start))
 
 
 
-    # except Exception as ex:
-    #     print("[!]Exception occured!! : " + str(ex))
+    except Exception as ex:
+        print("[!]Exception occured!! : " + str(ex))
