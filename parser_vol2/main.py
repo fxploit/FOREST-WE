@@ -1,7 +1,7 @@
 import settings as setting
 import live_artifact
 import os
-import collecting_artifact
+import collect_artifact
 import sqlite3
 
 def main():
@@ -16,9 +16,8 @@ def main():
     module_dst_path = r'E:\kape_test2'
 
     setting.setting(dbpath, dbname)
-    live_artifact.get_live_artifact(dbname)
-    collecting_artifact.collect(target_src_path, target_dst_path, module_dst_path, dbname)
+    # live_artifact.get_live_artifact(dbname)
+    collect_artifact.collect(target_src_path, target_dst_path, module_dst_path, dbname)
 
 if __name__ == '__main__':
     main()
-
