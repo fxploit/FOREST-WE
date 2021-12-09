@@ -6,11 +6,11 @@ import sql
 # Put the eventlog values ​​obtained through KAPE into the database
 def collect_eventlogs(module_dst_path, dbname):
     count = 0
-    files = os.listdir(module_dst_path + '/EventLogs/')
+    files = os.listdir(module_dst_path + '\\EventLogs\\')
 
     for file in files:
-        if os.path.isfile(module_dst_path + '/EventLogs/' + file):
-            with open(module_dst_path + '/EventLogs/' + file, 'r', encoding='utf-8') as f:
+        if os.path.isfile(module_dst_path + '\\EventLogs\\' + file):
+            with open(module_dst_path + '\\EventLogs\\' + file, 'r', encoding='utf-8') as f:
                 reader = csv.reader(f)
                 for row in reader:
                     if count == 0:
