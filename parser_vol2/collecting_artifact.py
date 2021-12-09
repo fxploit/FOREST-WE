@@ -3,6 +3,7 @@ import sqlite3
 import csv
 import collect_eventlog
 import collect_prefetch
+import collect_ArtMD
 
 # collect artifacts by using KAPE tool
 def collect_artifacts(target_src_path, target_dst_path, module_dst_path):
@@ -22,6 +23,7 @@ def collect(target_src_path, target_dst_path, module_dst_path, dbname):
         collect_artifacts(target_src_path, target_dst_path, module_dst_path)
         collect_eventlog.collect_eventlogs(module_dst_path, dbname)
         collect_prefetch.collect_prefetchs(target_dst_path, dbname)
-
+        collect_ArtMD.collect_ArtMDs(target_dst_path, dbname)
+        
     except Exception as ex:
         print("[!]Exception occured!! : " + str(ex))
