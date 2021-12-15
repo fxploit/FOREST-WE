@@ -16,14 +16,14 @@ def create_db(dbname):
 
 # if database does not exist, program is terminated.
 def check_db(dbpath, dbname):
-    try:
-        if os.path.isfile(dbpath):
-            os.remove(dbpath)
-        create_db(dbname)
-    except Exception as ex:
-        print('db is open')
-        print(ex)
-        exit(0)
+    # try:
+    if os.path.isfile(dbpath):
+        os.remove(dbpath)
+    create_db(dbname)
+    # except Exception as ex:
+    #     print('db is open')
+    #     print(ex)
+    #     exit(0)
 
 # Collects host basic information.
 # timezone, os architecture, os build version, os, user etc..
@@ -36,7 +36,7 @@ def foo(hive, flag):
     aKey = winreg.OpenKey(aReg, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
                           0, winreg.KEY_READ | flag)
 
-    count_subkey = winreg.QueryInfoKey(aKey)[1]
+    count_subkey = winreg.QueryInfoKey(aKey)[0]
 
     software_list = []
 
@@ -78,8 +78,8 @@ def setting(dbpath, dbname):
     try:
         check_db(dbpath, dbname)
 
-        check_hostinfo(dbname)
-        check_swinfo(dbname)
+        # check_hostinfo(dbname)
+        # check_swinfo(dbname)
 
     except Exception as ex:
         print("[!]Exception occured!! : " + str(ex))

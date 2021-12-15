@@ -17,6 +17,25 @@ def query_execute(dbname, query, args=None):
     conn.close()
 
 
+def query_execute_ret(dbname, query, args=None):
+    conn = sqlite3.connect(dbname)
+    cur = conn.cursor()
+
+    if args != None:
+        cur.execute(query, args)
+    else:
+        cur.execute(query)
+
+    conn.commit()
+
+    columns = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return columns
+
+
 '''CREATE'''
 
 def create_table(dbname):
@@ -38,14 +57,14 @@ def create_table(dbname):
          artAtime datetime, artCtime datetime, artsize varchar, artsha1 varchar)')
 
     ## EventLog TABLE CREATE
-    query_execute(dbname, 'CREATE TABLE Eventlog(id INTEGER PRIMARY KEY AUTOINCREMENT, RecordNumber int, EventRecordID int, TimeCreated datetime, EventID int, Level varchar,\
+    query_execute(dbname, 'CREATE TABLE Eventlog(id INTEGER PRIMARY KEY AUTOINCREMENT, art_key int, RecordNumber int, EventRecordID int, TimeCreated datetime, EventID int, Level varchar,\
          Provider varchar, Channel varchar, ProcessID int, Threadid int, Computer varchar, ChunkNumber int, UserID varchar, MapDescription varchar, UserName varchar, RemoteHost varchar, PayloadData1 varchar, PayloadData2 varchar, PayloadData3 varchar, PayloadData4 varchar, PayloadData5 varchar, PayloadData6 varchar, Executableinfo varchar, HiddenRecord varchar, SourceFile varchar, Keywords varchar, ExtraDataOffset varchar, Payload varchar)')
     
     ## Live_Netinfo TABLE CREATE
     query_execute(dbname, 'CREATE TABLE Live_Netinfo(id INTEGER PRIMARY KEY AUTOINCREMENT, Protocol varchar, LocalAddr varchar, ExternalAddr varchar, Status varchar, Pid int)')
 
     ## Prefetch TABLE CREATE
-    query_execute(dbname, 'CREATE TABLE Prefetch (id INTEGER PRIMARY KEY AUTOINCREMENT, PFfilename varchar, PEname varchar, RunCount int , LastExec1 datetime, LastExec2 datetime,\
+    query_execute(dbname, 'CREATE TABLE Prefetch (id INTEGER PRIMARY KEY AUTOINCREMENT, art_key int, PFfilename varchar, PEname varchar, RunCount int , LastExec1 datetime, LastExec2 datetime,\
          LastExec3 datetime, LastExec4 datetime, LastExec5 datetime, LastExec6 datetime, LastExec7 datetime, LastExec8 datetime, VolumeInfo TEXT, Directories TEXT, Resources TEXT)')
 
     ## $MFT TABLE CREATE
@@ -61,21 +80,29 @@ def create_table(dbname):
 
     query_execute(dbname, 'CREATE TABLE UsnJrnl (id INTEGER PRIMARY KEY AUTOINCREMENT, TimeStamp datetime, USN int, FileDirectory varchar, FullPath varchar, EventInfo varchar,\
          SourceInfo varchar, FileAttribute varchar, Carving_Flag varchar, FileReferenceNumber varchar, ParentFileReferenceNumber varchar)')
+    
 
-
-    query_execute(dbname, 'CREATE TABLE Registry_Scheduler (id INTEGER PRIMARY KEY AUTOINCREMENT, ExecFile varchar, FilePath varchar, Type int)')
+    query_execute(dbname, 'CREATE TABLE Registry_Scheduler (id INTEGER PRIMARY KEY AUTOINCREMENT, art_key int, ExecFile varchar, FilePath varchar, Type int)')
 
 
     # UAC Bypass (fodhelper, etc..)
-    query_execute(dbname, 'CREATE TABLE Registry_Command (id INTEGER PRIMARY KEY AUTOINCREMENT, ExecFile varchar, FilePath varchar, Type int)')
+    query_execute(dbname, 'CREATE TABLE Registry_Command (id INTEGER PRIMARY KEY AUTOINCREMENT, art_key int, ExecFile varchar, FilePath varchar, Type int)')
 
     #Group -> 키워드라 _Group으로 대체
-    query_execute(dbname, 'CREATE TABLE Registry_Services (id INTEGER PRIMARY KEY AUTOINCREMENT, Name varchar, BatchKeyPath varchar, Description varchar, BatchValueName varchar,\
-         DisplayName varchar, StartMode varchar, ServiceType varchar, NameKeyLastWrite varchar, ParametersKeyLastWrite varchar, _Group varchar, ImagePath varchar, ServiceDLL varchar,\
+    query_execute(dbname, 'CREATE TABLE Registry_Services (id INTEGER PRIMARY KEY AUTOINCREMENT, art_key int, Name varchar, BatchKeyPath varchar, Description varchar, BatchValueName varchar,\
+         DisplayName varchar, StartMode varchar, ServiceType varchar, NameKeyLastWrite datetime, ParametersKeyLastWrite datetime, _Group varchar, ImagePath varchar, ServiceDLL varchar,\
               RequiredPrivileges varchar)')
 
-
     
+    query_execute(dbname, 'CREATE TABLE Registry_RECmd (id INTEGER PRIMARY KEY AUTOINCREMENT, art_key int, HivePath varchar, HiveType varchar, Description varchar, Category varchar,\
+         KeyPath varchar, ValueName varchar, ValueType varchar, ValueData varchar, ValueData2 varchar, ValueData3 varchar, Comment varchar, Recursive varchar, Deleted varchar,\
+              LastWriteTimeStamp datetime, PluginDetailFile varchar)')
+    
+    query_execute(dbname, 'CREATE TABLE Prefetch_list (id INTEGER PRIMARY KEY AUTOINCREMENT, art_key int, FileName varchar, RunTime datetime)')
+
+
+    query_execute(dbname, 'CREATE TABLE Chain_art (chain_number int, id int, art_key int, description varchar, time datetime)')
+
 '''INSERT'''
 
 # inserting host-related data into db
@@ -97,13 +124,18 @@ def insert_live_netinfo(dbname, args):
     query_execute(dbname, 'INSERT INTO Live_Netinfo(Protocol, LocalAddr, ExternalAddr, Status, Pid) VALUES(?,?,?,?,?)', args)
 
 def insert_eventlog(dbname, args):
-    query_execute(dbname, 'INSERT INTO Eventlog(RecordNumber, EventRecordID, TimeCreated, EventID, Level, Provider, Channel, ProcessID, Threadid, Computer,\
+    query_execute(dbname, 'INSERT INTO Eventlog(art_key, RecordNumber, EventRecordID, TimeCreated, EventID, Level, Provider, Channel, ProcessID, Threadid, Computer,\
                     ChunkNumber, UserID, MapDescription, UserName, RemoteHost, PayloadData1, PayloadData2, PayloadData3, PayloadData4, PayloadData5, PayloadData6, \
-                        Executableinfo, HiddenRecord, SourceFile, Keywords, ExtraDataOffset, Payload) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', args)
+                        Executableinfo, HiddenRecord, SourceFile, Keywords, ExtraDataOffset, Payload) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [1]+args)
 
-def insert_prefetch(dbname, args):
-    query_execute(dbname, 'INSERT INTO Prefetch(PFfilename, PEname, RunCount, LastExec1, LastExec2, LastExec3, LastExec4, LastExec5, LastExec6, LastExec7, LastExec8, VolumeInfo,\
-         Directories, Resources) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', args)
+def insert_prefetch(dbname, args1, args2, args3):
+    query_execute(dbname, 'INSERT INTO Prefetch(art_key, PFfilename, PEname, RunCount, LastExec1, LastExec2, LastExec3, LastExec4, LastExec5, LastExec6, LastExec7, LastExec8, VolumeInfo,\
+         Directories, Resources) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [3] + args1 + args2 + args3)
+    
+    for arg in args2:
+        if arg != 0:
+            query_execute(dbname, 'INSERT INTO Prefetch_list(art_key, FileName, RunTime) VALUES (?,?,?)', [3]+[args1[0]]+[arg])
+
 
 def insert_ArtMD(dbname, args):
     query_execute(dbname, 'INSERT INTO ArtMD(artname, artpath, artcopypath, artcopytime, artMtime, artAtime, artCtime, artsize, artsha1) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', args)
@@ -127,14 +159,177 @@ def insert_UsnJrnl(dbname, args):
          ParentFileReferenceNumber) VALUES(?,?,?,?,?,?,?,?,?,?)', args)
 
 def insert_Registry_Scheduler(dbname, args):
-    query_execute(dbname, 'INSERT INTO Registry_Scheduler (ExecFile, FilePath, Type) VALUES(?,?,?)',args)
+    query_execute(dbname, 'INSERT INTO Registry_Scheduler (art_key, ExecFile, FilePath, Type) VALUES(?,?,?,?)', [2] + args)
 
 def insert_Registry_Command(dbname, args):
-    query_execute(dbname, 'INSERT INTO Registry_Command (ExecFile, FilePath, Type) VALUES(?,?,?)',args)
+    query_execute(dbname, 'INSERT INTO Registry_Command (art_key, ExecFile, FilePath, Type) VALUES(?,?,?,?)', [2] + args)
 
 def insert_Registry_Services(dbname, args):
-    query_execute(dbname, 'INSERT INTO Registry_Services (Name, BatchKeyPath, Description, BatchValueName, DisplayName, StartMode, ServiceType, NameKeyLastWrite, ParametersKeyLastWrite, _Group, ImagePath,\
-         ServiceDLL, RequiredPrivileges) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', args)
+    query_execute(dbname, 'INSERT INTO Registry_Services (art_key, Name, BatchKeyPath, Description, BatchValueName, DisplayName, StartMode, ServiceType, NameKeyLastWrite, ParametersKeyLastWrite, _Group, ImagePath,\
+         ServiceDLL, RequiredPrivileges) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [2] + args)
+
+
+def insert_Registry_RECmd(dbname, args):
+    query_execute(dbname, 'INSERT INTO Registry_RECmd (art_key, HivePath, HiveType, Description, Category, KeyPath, ValueName, ValueType, ValueData, ValueData2, ValueData3, Comment,\
+         Recursive, Deleted, LastWriteTimeStamp, PluginDetailFile) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [2] + args)
+
+
+def insert_chain_art(dbname, args):
+    query_execute(dbname, 'INSERT INTO Chain_art (chain_number, id, art_key, description, time) VALUES(?,?,?,?,?)', args)
 
 
 '''SELECT'''
+
+
+def select_chain_start(dbname, basetime=None):
+    eventid_set = [1000, 1001, 4104, 1002] # 여기다가 chain의 시작이라고 볼 수 있는 행위 event id set 추가 ex) defender, WER, POWERSHELL
+    process_set = ['WORD', 'CHROME', 'EXCEL', 'EDGE'] # 여기다가 우리가 조사할 시작 프로세스들 추가 ex) MS OFFICE, CHROME, EDGE, etc...
+
+    if basetime == None:
+        #첫 실행. 즉 겹치는 시간이 존재하지 않음
+        #Prefetch 에서 뽑아오기
+        query = 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list'
+        if process_set:
+            query += ' WHERE'
+            for MalExec in process_set:
+                query += ' Prefetch_list.FileName LIKE "%{}%" or'.format(str(MalExec))
+            
+            query = query[0:-3]
+        
+        # EventLog에서 뽑아오기
+        query += ' UNION SELECT id, art_key, Provider, TimeCreated FROM EventLog'
+
+        if eventid_set:
+            query += '  WHERE'
+            for eventid in eventid_set:
+                query += ' EventLog.EventID='+str(eventid)+' or'
+            query = query[0:-3]
+
+    else:
+        # 두 번째 이후부터의 실행. 체인을 중복생성하지 않게 하기 위함.
+        #prefetch 에서 뽑아오기
+        query = 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list'
+        if process_set:
+            query += ' WHERE'
+            for MalExec in process_set:
+                query += ' Prefetch_list.FileName LIKE "%{}%" and RunTime>=datetime("{}") or'.format(MalExec, basetime)
+            query = query[0:-3]
+                
+
+
+        # EventLog에서 뽑아오기
+        query += ' UNION SELECT id, art_key, Provider, TimeCreated FROM EventLog'
+        if eventid_set:
+            query += ' WHERE'
+            for eventid in eventid_set:
+                query += ' EventLog.EventID={} and EventLog.TimeCreated>=datetime("{}") or'.format(eventid, basetime)
+            query = query[0:-3]
+    
+
+    query += ' ORDER BY Prefetch_list.RunTime LIMIT 1'
+
+    return query_execute_ret(dbname, query)
+    
+
+
+
+def select_chain_end(dbname, start_time, end_time):
+    eventid_set = [1102, 4720] # 여기다가 chain의 종료 행위라고 볼 수 있는 event id set 추가 ex) scheduler
+    MalExec_set = [] # 여기다가 우리가 생각하는 악성행위에 사용한 프로그램명(프리패치에서 찾아볼 데이터) 추가
+    reg_desc_set = ['UserAssist']
+
+    # select_chain_start 에서 뽑아온 데이터 이후 시점에서의 데이터 조회. 찾는대로 반환
+    # Prefetch 에서 뽑아오기
+    query = ''
+    
+    if MalExec_set:
+        query += 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list WHERE'
+        for MalExec in MalExec_set:
+            query += ' Prefetch_list.FileName LIKE "%{}%" and Prefetch_list.RunTime>=datetime("{}") and Prefetch_list.RunTime<=datetime("{}") or'.format(MalExec, start_time, end_time)
+            # query += ' Prefetch_list.FileName={} and Prefetch_list.RunTime>={} and Prefetch_list.RunTime<={} or'.format(MalExec, start_time, end_time)
+        
+        query = query[0:-3] # ' or' 제거
+
+
+    # EventLog에서 뽑아오기
+    if eventid_set:
+        if MalExec_set:
+            query += ' UNION SELECT id, art_key, EventID, TimeCreated FROM EventLog WHERE'
+        else:
+            query += 'SELECT id, art_key, EventID, TimeCreated FROM EventLog WHERE'
+        for eventid in eventid_set:
+            query += ' EventLog.EventID={} and EventLog.TimeCreated>=datetime("{}") and EventLog.TimeCreated<=datetime("{}") or'.format(eventid, start_time, end_time)
+
+        query = query[0:-3]
+    
+    # Registry에서 뽑아오기
+    if reg_desc_set:
+        if MalExec_set or eventid_set:
+            query += ' UNION SELECT id, art_key, Description, LastWriteTimeStamp FROM Registry_RECmd WHERE'
+        else:
+            query += 'SELECT id, art_key, Description, LastWriteTimeStamp FROM Registry_RECmd WHERE'
+        for reg_desc in reg_desc_set:
+            query += ' Registry_RECmd.Description LIKE "%{}%" and Registry_RECmd.LastWriteTimeStamp>=datetime("{}") and Registry_RECmd.LastWriteTimeStamp<=datetime("{}") or'.format(reg_desc, start_time, end_time)
+
+        query = query[0:-3]
+
+    query += ' ORDER BY EventLog.TimeCreated LIMIT 1'
+
+    return query_execute_ret(dbname, query)
+
+
+
+
+def select_eventlog(dbname, start_time, end_time, eventid_set=None):
+    query = 'SELECT id, art_key, EventID, TimeCreated FROM EventLog'
+
+    if eventid_set:
+        query += ' WHERE'
+        for eventid in eventid_set:
+            query += ' EventID={} and TimeCreated>=datetime("{}") and TimeCreated<=datetime("{}") or'.format(eventid, start_time, end_time)
+        query = query[0:-3]
+    else:
+        query += ' WHERE TimeCreated>=datetime("{}") and TimeCreated<=datetime("{}")'.format(start_time, end_time)
+    return query_execute_ret(dbname, query)
+
+
+def select_prefetch(dbname, start_time, end_time, proc_set=None):
+    query = 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list'
+
+
+    if proc_set:
+        query += ' WHERE'
+        for proc in proc_set:
+            query += ' FileName LIKE "%{}%" and RunTime<=datetime("{}") and RunTime>=datetime("{}") or'.format(proc, start_time, end_time)
+        query = query[0:-3]
+    else:
+        query += ' WHERE RunTime<=datetime("{}") and RunTime>=datetime("{}")'.format(start_time, end_time)
+    return query_execute_ret(dbname, query)
+
+
+def select_reg_RECmd(dbname, start_time, end_time, reg_set=None):
+    query = 'SELECT id, art_key, Description, LastWriteTimeStamp FROM Registry_RECmd'
+
+    if reg_set:
+        query += ' WHERE'
+        for reg in reg_set:
+            query += ' Description LIKE "%{}%" and LastWriteTimeStamp<=datetime("{}") and LastWriteTimeStamp>=datetime("{}") or'.format(reg, start_time, end_time)
+        query = query[0:-3]
+    else:
+        query += ' WHERE LastWriteTimeStamp<=datetime("{}") and LastWriteTimeStamp>=datetime("{}")'.format(start_time, end_time)
+    
+    return query_execute_ret(dbname, query)
+
+
+def select_reg_services(dbname, start_time, end_time, reg_set=None):
+    query = 'SELECT id, art_key, Description, NameKeyLastWrite FROM Registry_Services'
+
+    if reg_set:
+        query += ' WHERE'
+        for reg in reg_set:
+            query += ' Description LIKE "%{}%" and NameKeyLastWrite<=datetime("{}") and NameKeyLastWrite>=datetime("{}") or'.format(reg, start_time, end_time)
+        query = query[0:-3]
+    else:
+        query += ' WHERE NameKeyLastWrite<=datetime("{}") and NameKeyLastWrite>=datetime("{}")'.format(start_time, end_time)
+    
+    return query_execute_ret(dbname, query)

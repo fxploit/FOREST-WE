@@ -1,8 +1,9 @@
 import settings as setting
 import live_artifact
 import os
-import collect_artifact
-import sqlite3
+import collect_main
+import analyze_main
+import time
 
 def main():
     path = os.getcwd()
@@ -15,9 +16,17 @@ def main():
     target_dst_path = r'E:\kape_combined'
     module_dst_path = r'E:\kape_test2'
 
-    setting.setting(dbpath, dbname)
+
+
+    # print('start : ', time.ctime(time.time()))
+    # setting.setting(dbpath, dbname)
+    # print('setting : ', time.ctime(time.time()))
     # live_artifact.get_live_artifact(dbname)
-    collect_artifact.collect(target_src_path, target_dst_path, module_dst_path, dbname)
+    # print('live artifact : ', time.ctime(time.time()))
+    # collect_main.collect(target_src_path, target_dst_path, module_dst_path, dbname)
+    # print('collect : ', time.ctime(time.time()))
+    analyze_main.analyze(dbname)
+    print('analyze : ', time.ctime(time.time()))
 
 if __name__ == '__main__':
     main()

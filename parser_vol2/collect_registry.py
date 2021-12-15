@@ -108,16 +108,36 @@ def collect_services(module_dst_path, dbname):
 
 
 
+def collect_Registry_RECmd(module_dst_path, dbname):
+    paths=[]
+    files=[]
+    encoding_set = ['latin-1', 'utf-8', 'euc-kr']
 
-'''
-paths = module_dst_path+'\\FileSystem\\NLT_UsnJrnl*'
-    paths = glob.glob(paths)
+    for root, dirs, files1 in os.walk(module_dst_path+'\\Registry'):
+        paths.append(root)
+        for path in paths:
+            files += glob.glob(root+'\\*RECmd_Batch*')
+    
+    files = set(files)
+    count = 0
 
-    for path in paths:
-'''
+    for file in files:
+        for encode in encoding_set:
+            try:
+                with open(file, 'r', encoding=encode) as f:
+                    reader = csv.reader(f)
+                    for row in reader:
+                        try:
+                            sql.insert_Registry_RECmd(dbname, [row[i] for i in range(len(row))])
+                        except Exception as ex:
+                            print(ex)
+                            continue
+            except:
+                continue
+
 
 def collect_registries(module_dst_path, dbname):
     collect_schedulers(dbname)
     collect_command(dbname)
     collect_services(module_dst_path, dbname)
-    
+    collect_Registry_RECmd(module_dst_path, dbname)

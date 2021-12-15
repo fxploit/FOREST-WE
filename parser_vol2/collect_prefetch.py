@@ -414,7 +414,7 @@ class Prefetch(object):
         while len(self.timestamps) < 8:
             self.timestamps.append(0)
 
-        sql.insert_prefetch(dbname, [ntpath.basename(self.pFileName), self.executableName, self.runCount] + [timestamp for timestamp in self.timestamps] + [volume_buf, dir_buf, rsc_buf])
+        sql.insert_prefetch(dbname, [ntpath.basename(self.pFileName), self.executableName, self.runCount], [timestamp for timestamp in self.timestamps], [volume_buf, dir_buf, rsc_buf])
 
         
 
@@ -444,4 +444,3 @@ def collect_prefetchs(target_dst_path, dbname):
                 parsed_files.append(p)
                 p.collect_prefetch(dbname)
                 
-
