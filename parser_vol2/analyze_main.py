@@ -11,12 +11,15 @@ def analyze(dbname):
     chain_number = 1
 
     time = find_chain.connect_chain(dbname) # 체인의 시작 시간, 종료 시간을 받아옴
-    while time: # 체인 형성 가능
-        start_time = time[0] # 체인 시작
-        end_time = time[1] # 체인 종료
 
-        sql.insert_chain_art(dbname, [chain_number]+list(time[2]))
-        sql.insert_chain_art(dbname, [chain_number]+list(time[3]))
+    while time: # 체인 형성 가능
+        start_time = time[0] # 체인 시작 시점
+        end_time = time[1] # 체인 종료 시점
+        
+
+        sql.insert_chain_art(dbname, [chain_number]+list(time[2])) # 체인 시작 기준 아티팩트
+        if time[3]:
+            sql.insert_chain_art(dbname, [chain_number]+list(time[3])) # 체인 종료 기준 아티팩트
 
         columns = sql.select_eventlog(dbname, start_time, end_time, eventid_set) # start~end 시간대에 생성되었으며 가중치를 메길만한 evnetlog 모두 chain_art 테이블에 저장
         for column in columns:
@@ -38,11 +41,11 @@ def analyze(dbname):
         
         
         if analyze_artifact.analyze_art(dbname, chain_number):
-            time = find_chain.connect_chain(dbname, end_time+datetime.timedelta(milliseconds=1)) # 체인이 형성되었다면 해당 체인 이후로부터 생성
+            time = find_chain.connect_chain(dbname, end_time+datetime.timedelta(milliseconds=100)) # 체인이 형성되었다면 해당 체인 이후로부터 생성
         else:
-            time = find_chain.connect_chain(dbname, start_time+datetime.timedelta(milliseconds=1)) # 체인이 형성되지 않았다면 시작 아티팩트 직후부터 다시 찾기
+            basetime = start_time+datetime.timedelta(seconds=1)
+            time = find_chain.connect_chain(dbname, basetime) # 체인이 형성되지 않았다면 시작 아티팩트 직후부터 다시 찾기
 
-        chain_number = chain_number + datetime.timedelta(eventid_set)
-        
+        chain_number += 1
 
     return None

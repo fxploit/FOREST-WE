@@ -16,14 +16,14 @@ def create_db(dbname):
 
 # if database does not exist, program is terminated.
 def check_db(dbpath, dbname):
-    # try:
-    if os.path.isfile(dbpath):
-        os.remove(dbpath)
-    create_db(dbname)
-    # except Exception as ex:
-    #     print('db is open')
-    #     print(ex)
-    #     exit(0)
+    try:
+        if os.path.isfile(dbpath):
+            os.remove(dbpath)
+        create_db(dbname)
+    except Exception as ex:
+        print('db is open')
+        print(ex)
+        exit(0)
 
 # Collects host basic information.
 # timezone, os architecture, os build version, os, user etc..

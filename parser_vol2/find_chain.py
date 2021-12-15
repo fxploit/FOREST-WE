@@ -4,6 +4,8 @@ import datetime
 
 
 def StrToDate(str_date):
+    if len(str_date) > 26:
+        str_date = str_date[0:25]
     return datetime.datetime.strptime(str_date, r'%Y-%m-%d %H:%M:%S.%f')
 
 def connect_chain(dbname, basetime=None, eventid_set=None):
@@ -27,6 +29,7 @@ def connect_chain(dbname, basetime=None, eventid_set=None):
         print("chain start point : {} and end point : {}".format(columns_start,columns_end))
     else:
         end_time = start_time+timedelta(seconds=60)
+        columns_end = []
         print("chain start point : {} and end point is not founud".format(columns_start))
     
     return [start_time, end_time, columns_start, columns_end]

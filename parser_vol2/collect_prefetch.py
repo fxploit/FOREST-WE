@@ -7,6 +7,7 @@ import ntpath
 import tempfile
 from datetime import datetime,timedelta
 import sql
+from tqdm import tqdm
 
 # Windows-only utility to decompress MAM compressed files
 class DecompressWin10(object):
@@ -437,7 +438,7 @@ def collect_prefetchs(target_dst_path, dbname):
     else:
         file_paths.append(args)
     parsed_files = []
-    for filepath in file_paths:
+    for filepath in tqdm(file_paths):
         if filepath.endswith(".pf"):
             if os.path.getsize(filepath) > 0:
                 p = Prefetch(filepath)

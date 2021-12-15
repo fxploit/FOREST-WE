@@ -14,7 +14,8 @@ def analyze_art(dbname, chain_number):
     columns = sql.select_chain_art(dbname, chain_number)
 
     for column in columns:
-        total += art_weight[column[3]]
+        if column[3] in art_weight.keys():
+            total += art_weight[column[3]]
     
 
     if total >= threshold:

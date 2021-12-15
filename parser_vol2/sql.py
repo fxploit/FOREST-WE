@@ -208,12 +208,12 @@ def select_chain_start(dbname, basetime=None):
 
     else:
         # 두 번째 이후부터의 실행. 체인을 중복생성하지 않게 하기 위함.
-        #prefetch 에서 뽑아오기
+        # prefetch 에서 뽑아오기
         query = 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list'
         if process_set:
             query += ' WHERE'
             for MalExec in process_set:
-                query += ' Prefetch_list.FileName LIKE "%{}%" and RunTime>=datetime("{}") or'.format(MalExec, basetime)
+                query += ' Prefetch_list.FileName LIKE "%{}%" and RunTime>datetime("{}") or'.format(MalExec, basetime)
             query = query[0:-3]
                 
 
@@ -223,7 +223,7 @@ def select_chain_start(dbname, basetime=None):
         if eventid_set:
             query += ' WHERE'
             for eventid in eventid_set:
-                query += ' EventLog.EventID={} and EventLog.TimeCreated>=datetime("{}") or'.format(eventid, basetime)
+                query += ' EventLog.EventID={} and EventLog.TimeCreated>datetime("{}") or'.format(eventid, basetime)
             query = query[0:-3]
     
 
@@ -246,7 +246,7 @@ def select_chain_end(dbname, start_time, end_time):
     if MalExec_set:
         query += 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list WHERE'
         for MalExec in MalExec_set:
-            query += ' Prefetch_list.FileName LIKE "%{}%" and Prefetch_list.RunTime>=datetime("{}") and Prefetch_list.RunTime<=datetime("{}") or'.format(MalExec, start_time, end_time)
+            query += ' Prefetch_list.FileName LIKE "%{}%" and Prefetch_list.RunTime>datetime("{}") and Prefetch_list.RunTime<datetime("{}") or'.format(MalExec, start_time, end_time)
             # query += ' Prefetch_list.FileName={} and Prefetch_list.RunTime>={} and Prefetch_list.RunTime<={} or'.format(MalExec, start_time, end_time)
         
         query = query[0:-3] # ' or' 제거
@@ -259,7 +259,7 @@ def select_chain_end(dbname, start_time, end_time):
         else:
             query += 'SELECT id, art_key, EventID, TimeCreated FROM EventLog WHERE'
         for eventid in eventid_set:
-            query += ' EventLog.EventID={} and EventLog.TimeCreated>=datetime("{}") and EventLog.TimeCreated<=datetime("{}") or'.format(eventid, start_time, end_time)
+            query += ' EventLog.EventID={} and EventLog.TimeCreated>datetime("{}") and EventLog.TimeCreated<datetime("{}") or'.format(eventid, start_time, end_time)
 
         query = query[0:-3]
     
@@ -270,7 +270,7 @@ def select_chain_end(dbname, start_time, end_time):
         else:
             query += 'SELECT id, art_key, Description, LastWriteTimeStamp FROM Registry_RECmd WHERE'
         for reg_desc in reg_desc_set:
-            query += ' Registry_RECmd.Description LIKE "%{}%" and Registry_RECmd.LastWriteTimeStamp>=datetime("{}") and Registry_RECmd.LastWriteTimeStamp<=datetime("{}") or'.format(reg_desc, start_time, end_time)
+            query += ' Registry_RECmd.Description LIKE "%{}%" and Registry_RECmd.LastWriteTimeStamp>datetime("{}") and Registry_RECmd.LastWriteTimeStamp<datetime("{}") or'.format(reg_desc, start_time, end_time)
 
         query = query[0:-3]
 
@@ -287,10 +287,10 @@ def select_eventlog(dbname, start_time, end_time, eventid_set=None):
     if eventid_set:
         query += ' WHERE'
         for eventid in eventid_set:
-            query += ' EventID={} and TimeCreated>=datetime("{}") and TimeCreated<=datetime("{}") or'.format(eventid, start_time, end_time)
+            query += ' EventID={} and TimeCreated>datetime("{}") and TimeCreated<datetime("{}") or'.format(eventid, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE TimeCreated>=datetime("{}") and TimeCreated<=datetime("{}")'.format(start_time, end_time)
+        query += ' WHERE TimeCreated>=datetime("{}") and TimeCreated<datetime("{}")'.format(start_time, end_time)
     return query_execute_ret(dbname, query)
 
 
@@ -300,10 +300,10 @@ def select_prefetch(dbname, start_time, end_time, proc_set=None):
     if proc_set:
         query += ' WHERE'
         for proc in proc_set:
-            query += ' FileName LIKE "%{}%" and RunTime<=datetime("{}") and RunTime>=datetime("{}") or'.format(proc, start_time, end_time)
+            query += ' FileName LIKE "%{}%" and RunTime<datetime("{}") and RunTime>datetime("{}") or'.format(proc, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE RunTime<=datetime("{}") and RunTime>=datetime("{}")'.format(start_time, end_time)
+        query += ' WHERE RunTime<=datetime("{}") and RunTime>datetime("{}")'.format(start_time, end_time)
     return query_execute_ret(dbname, query)
 
 
@@ -313,10 +313,10 @@ def select_reg_RECmd(dbname, start_time, end_time, reg_set=None):
     if reg_set:
         query += ' WHERE'
         for reg in reg_set:
-            query += ' Description LIKE "%{}%" and LastWriteTimeStamp<=datetime("{}") and LastWriteTimeStamp>=datetime("{}") or'.format(reg, start_time, end_time)
+            query += ' Description LIKE "%{}%" and LastWriteTimeStamp<datetime("{}") and LastWriteTimeStamp>datetime("{}") or'.format(reg, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE LastWriteTimeStamp<=datetime("{}") and LastWriteTimeStamp>=datetime("{}")'.format(start_time, end_time)
+        query += ' WHERE LastWriteTimeStamp<datetime("{}") and LastWriteTimeStamp>datetime("{}")'.format(start_time, end_time)
     
     return query_execute_ret(dbname, query)
 
@@ -327,10 +327,10 @@ def select_reg_services(dbname, start_time, end_time, reg_set=None):
     if reg_set:
         query += ' WHERE'
         for reg in reg_set:
-            query += ' Description LIKE "%{}%" and NameKeyLastWrite<=datetime("{}") and NameKeyLastWrite>=datetime("{}") or'.format(reg, start_time, end_time)
+            query += ' Description LIKE "%{}%" and NameKeyLastWrite<datetime("{}") and NameKeyLastWrite>datetime("{}") or'.format(reg, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE NameKeyLastWrite<=datetime("{}") and NameKeyLastWrite>=datetime("{}")'.format(start_time, end_time)
+        query += ' WHERE NameKeyLastWrite<datetime("{}") and NameKeyLastWrite>datetime("{}")'.format(start_time, end_time)
     
     return query_execute_ret(dbname, query)
 

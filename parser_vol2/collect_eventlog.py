@@ -1,7 +1,7 @@
 import os
 import csv
 import sql
-
+from tqdm import tqdm
 
 # Put the eventlog values ​​obtained through KAPE into the database
 def collect_eventlogs(module_dst_path, dbname):
@@ -79,16 +79,13 @@ def collect_eventlogs(module_dst_path, dbname):
         'Microsoft-Windows-Windows Defender' : 1001,
         'Microsoft-Windows-Windows Defender' : 1002
         }
-    
-    if not os.path.isdir(os.path.join(module_dst_path, 'EvnetLogs')):
-        os.mkdir(os.path.join(module_dst_path, 'EvnetLogs'))
 
-    files = os.listdir(os.path.join(module_dst_path, 'EvnetLogs'))
+    files = os.listdir(os.path.join(module_dst_path, 'EventLogs'))
 
 
-    for file in files:
-        if os.path.isfile(os.path.join(module_dst_path, 'EvnetLogs') + file):
-            with open(os.path.join(module_dst_path, 'EvnetLogs') + file, 'r', encoding='utf-8') as f:
+    for file in tqdm(files):
+        if os.path.isfile(os.path.join(module_dst_path, 'EventLogs') + file):
+            with open(os.path.join(module_dst_path, 'EventLogs') + file, 'r', encoding='utf-8') as f:
                 reader = csv.reader(f)
                 for row in reader:
                     try:

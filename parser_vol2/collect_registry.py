@@ -3,6 +3,7 @@ from winreg import *
 import os
 import glob
 import csv
+from tqdm import tqdm
 
 def collect_registry(key, hive, dbname):
     varReg = ConnectRegistry(None, hive)
@@ -97,10 +98,10 @@ def collect_services(module_dst_path, dbname):
     
     files=set(files)
 
-    for file in files:
+    for file in tqdm(files):
         with open(file, 'r', encoding='utf-8') as f:
             reader = csv.reader(f)
-            for row in reader:
+            for row in tqdm(reader):
                 try:
                     sql.insert_Registry_Services(dbname, [row[i] for i in range(len(row))])
                 except:
@@ -126,7 +127,7 @@ def collect_Registry_RECmd(module_dst_path, dbname):
             try:
                 with open(file, 'r', encoding=encode) as f:
                     reader = csv.reader(f)
-                    for row in reader:
+                    for row in tqdm(reader):
                         try:
                             sql.insert_Registry_RECmd(dbname, [row[i] for i in range(len(row))])
                         except Exception as ex:
