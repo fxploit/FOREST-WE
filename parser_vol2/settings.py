@@ -78,8 +78,8 @@ def setting(dbpath, dbname):
     try:
         check_db(dbpath, dbname)
 
-        # check_hostinfo(dbname)
-        # check_swinfo(dbname)
+        check_hostinfo(dbname)
+        check_swinfo(dbname)
 
     except Exception as ex:
         print("[!]Exception occured!! : " + str(ex))
