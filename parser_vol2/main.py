@@ -17,7 +17,6 @@ def main():
     module_dst_path = r'E:\kape_test2'
 
 
-
     print('start : ', time.ctime(time.time()))
     setting.setting(dbpath, dbname)
     print('setting : ', time.ctime(time.time()))

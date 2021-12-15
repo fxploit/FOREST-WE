@@ -10,7 +10,6 @@ def collect_eventlogs(module_dst_path, dbname):
 
     event_set = {
         # 여기다가 dictionary 형태로 Provider + event ID 추가
-
         'Application Error' : 1000,
         'Windows Error Reporting' : 1001,
         'Microsoft Windows Security Auditing' : 4720,
@@ -28,13 +27,10 @@ def collect_eventlogs(module_dst_path, dbname):
         'Microsoft Windows Security Auditing' : 4625,
         'Microsoft Windows Security Auditing' : 4648,
         'Microsoft Windows Security Auditing' : 4634,
-        'Microsoft Windows Terminal Services RemoteConnectionManager' : 1149,
-        'Microsoft Windows Security Auditing' : 4624,
-        'Microsoft Windows Security Auditing' : 4625,
-        'Microsoft Windows Security Auditing' : 4634,
+        'Microsoft Windows Security Auditing' : 4616,
+        'Microsoft Windows Security Auditing' : 4670,
         'Microsoft Windows Eventlog' : 1100,
         'Microsoft Windows Eventlog' : 1102,
-        'Microsoft Windows Security Auditing' : 4616,
         'Microsoft Windows Terminal Services RemoteConnectionManager' : 1149,
         'Microsoft Windows Security Auditing' : 4624,
         'Microsoft Windows Security Auditing' : 4625,
@@ -52,7 +48,11 @@ def collect_eventlogs(module_dst_path, dbname):
         'Microsoft Windows PowerShell' : 4104,
         'Microsoft Windows PowerShell' : 4105,
         'Microsoft Windows PowerShell' : 4106,
+        'Microsoft Windows Security Auditing' : 4663,
+        'Microsoft Windows Security Auditing' : 4670,
+        'Microsoft Windows Security Auditing' : 4673,
         'Microsoft Windows Security Auditing' : 4688,
+        'Security' : 4703,
         'Microsoft Windows PowerShell' : 8193,
         'Microsoft Windows PowerShell' : 8194,
         'Microsoft Windows PowerShell' : 8195,
@@ -64,8 +64,22 @@ def collect_eventlogs(module_dst_path, dbname):
         'Microsoft Windows PowerShell' : 40962,
         'Microsoft Windows PowerShell' : 53504,
         'Microsoft Office 16 Alerts' : 300,
-        'Microsoft Windows Security Auditing' : 4720
-    }
+        'Microsoft Windows Security Auditing' : 4673,
+        'Microsoft Windows Security Auditing' : 4720,
+        'Microsoft Windows Security Auditing' : 4624,
+        'Microsoft Windows Security Auditing' : 4625,
+        'Microsoft Windows Security Auditing' : 4648,
+        'Microsoft Windows Security Auditing' : 4616,
+        'Microsoft Windows Security Auditing' : 4670,
+        'Microsoft Windows Eventlog' : 1102,
+        'Microsoft Windows Security Auditing' : 4624,
+        'Microsoft Windows Security Auditing' : 4625,
+        'Microsoft Windows Security Auditing' : 4663,
+        'Microsoft-Windows-Windows Defender' : 1000,
+        'Microsoft-Windows-Windows Defender' : 1001,
+        'Microsoft-Windows-Windows Defender' : 1002
+        }
+    
     if not os.path.isdir(os.path.join(module_dst_path, 'EvnetLogs')):
         os.mkdir(os.path.join(module_dst_path, 'EvnetLogs'))
 
@@ -79,12 +93,12 @@ def collect_eventlogs(module_dst_path, dbname):
                 for row in reader:
                     try:
                         for key, val in event_set.items():
-                            if row[5]==key and row[3]==str(val):
+                            if row[5].replace('-', ' ')==key.replace('-', ' ') and row[3]==str(val):
                                 sql.insert_eventlog(dbname, [row[i] for i in range(len(row))])
                     except:
                         continue
 
-6
+
 # Eventlog table schema
 
 '''

@@ -182,7 +182,8 @@ def insert_chain_art(dbname, args):
 
 
 def select_chain_start(dbname, basetime=None):
-    eventid_set = [1000, 1001, 4104, 1002] # 여기다가 chain의 시작이라고 볼 수 있는 행위 event id set 추가 ex) defender, WER, POWERSHELL
+    # 여기다가 chain의 시작이라고 볼 수 있는 행위 event id set 추가 ex) defender, WER, POWERSHELL
+    eventid_set = [1000,1001,4104,4105,4106,1000,1001,1002] # WER, POWERSHELL, DEFENDER Event ID
     process_set = ['WORD', 'CHROME', 'EXCEL', 'EDGE'] # 여기다가 우리가 조사할 시작 프로세스들 추가 ex) MS OFFICE, CHROME, EDGE, etc...
 
     if basetime == None:
@@ -234,9 +235,9 @@ def select_chain_start(dbname, basetime=None):
 
 
 def select_chain_end(dbname, start_time, end_time):
-    eventid_set = [1102, 4720] # 여기다가 chain의 종료 행위라고 볼 수 있는 event id set 추가 ex) scheduler
+    eventid_set = [4698,4673,5158,4720,4624,4625,4648,4616,4670,1102,4624,4625,4663] # 여기다가 chain의 종료 행위라고 볼 수 있는 event id set 추가 ex) scheduler
     MalExec_set = [] # 여기다가 우리가 생각하는 악성행위에 사용한 프로그램명(프리패치에서 찾아볼 데이터) 추가
-    reg_desc_set = ['UserAssist']
+    reg_desc_set = ['schedule', 'run', 'service', 'command']
 
     # select_chain_start 에서 뽑아온 데이터 이후 시점에서의 데이터 조회. 찾는대로 반환
     # Prefetch 에서 뽑아오기
@@ -296,7 +297,6 @@ def select_eventlog(dbname, start_time, end_time, eventid_set=None):
 def select_prefetch(dbname, start_time, end_time, proc_set=None):
     query = 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list'
 
-
     if proc_set:
         query += ' WHERE'
         for proc in proc_set:
@@ -332,4 +332,9 @@ def select_reg_services(dbname, start_time, end_time, reg_set=None):
     else:
         query += ' WHERE NameKeyLastWrite<=datetime("{}") and NameKeyLastWrite>=datetime("{}")'.format(start_time, end_time)
     
+    return query_execute_ret(dbname, query)
+
+
+def select_chain_art(dbname, arg):
+    query = 'SELECT * FROM chain_art WHERE chain_number={}'.format(arg)
     return query_execute_ret(dbname, query)
