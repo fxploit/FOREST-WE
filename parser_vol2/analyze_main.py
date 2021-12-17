@@ -33,13 +33,13 @@ def analyze(dbname):
         for column in columns:
             sql.insert_chain_art(dbname, [chain_number] + list(column))
         
-        columns = sql.select_reg_RECmd(dbname, start_time, end_time, reg_RECmd_set) # start~end 시간대에 생성된 레지스트리들을 chain_art에 저장
-        for column in columns:
-            sql.insert_chain_art(dbname, [chain_number] + list(column))
+        # columns = sql.select_reg_RECmd(dbname, start_time, end_time, reg_RECmd_set) # start~end 시간대에 생성된 레지스트리들을 chain_art에 저장
+        # for column in columns:
+        #     sql.insert_chain_art(dbname, [chain_number] + list(column))
 
-        columns = sql.select_reg_services(dbname, start_time, end_time, reg_services_set) # 해당 시점에 생성된 서비스 관련 레지스트리 chain_art에 저장
-        for column in columns:
-            sql.insert_chain_art(dbname, [chain_number] + list(column))
+        # columns = sql.select_reg_services(dbname, start_time, end_time, reg_services_set) # 해당 시점에 생성된 서비스 관련 레지스트리 chain_art에 저장
+        # for column in columns:
+        #     sql.insert_chain_art(dbname, [chain_number] + list(column))
         
         # 위의 모든 값들은 start~end 시간대, 즉 체인이 구성된 동안의 아티팩트들의 모임이다.
         

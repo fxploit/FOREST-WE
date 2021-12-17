@@ -34,7 +34,8 @@ def analyze_art(dbname, chain_number):
         if column[3] in art_weight.keys(): # chain_art 테이블의 description 문자열이 키에 존재하는가
             total += art_weight[column[3]]
         elif '.pf' in column[3]:
-            total += 2
+            if sql.select_chain_pf(dbname, column[1]):
+                total += 2
     
 
     if total >= threshold:

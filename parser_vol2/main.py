@@ -13,8 +13,8 @@ def main():
     #cur = conn.cursor()
 
     target_src_path = 'C:\\'
-    target_dst_path = r'E:\kape_combined'
-    module_dst_path = r'E:\kape_test2'
+    target_dst_path = r'C:\kape_combined'
+    module_dst_path = r'C:\kape_test2'
 
 
     # print('start : ', time.ctime(time.time()))

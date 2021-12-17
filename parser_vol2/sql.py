@@ -269,7 +269,7 @@ def select_chain_end(dbname, start_time, end_time):
         
         query = query[0:-3] # ' or' 제거
 
-        query += ' ORDER BY Prefetch_list.RunTime LIMIT 1'
+        query += ' ORDER BY Prefetch_list.RunTime DESC LIMIT 1'
 
     ret = query_execute_ret(dbname,query)
     
@@ -280,7 +280,7 @@ def select_chain_end(dbname, start_time, end_time):
     query = ''
     query += 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list WHERE Prefetch_list.RunCount=1 and Prefetch_list.RunTime>"{}" and Prefetch_list.RunTime<"{}"'.format(start_time, end_time)
 
-    query += ' ORDER BY Prefetch_list.RunTime LIMIT 1'
+    query += ' ORDER BY Prefetch_list.RunTime DESC LIMIT 1'
 
     ret = query_execute_ret(dbname, query)
 
@@ -296,7 +296,7 @@ def select_chain_end(dbname, start_time, end_time):
 
         query = query[0:-3]
     
-        query += ' ORDER BY EventLog.TimeCreated LIMIT 1'
+        query += ' ORDER BY EventLog.TimeCreated DESC LIMIT 1'
 
     ret = query_execute_ret(dbname, query)
 
@@ -314,7 +314,7 @@ def select_chain_end(dbname, start_time, end_time):
 
         query = query[0:-3]
 
-        query += ' ORDER BY Registry_RECmd.LastWriteTimeStamp LIMIT 1'
+        query += ' ORDER BY Registry_RECmd.LastWriteTimeStamp DESC LIMIT 1'
 
     return query_execute_ret(dbname, query)
 
@@ -328,7 +328,7 @@ def select_eventlog(dbname, start_time, end_time, eventid_set=None):
             query += ' EventID={} and TimeCreated>"{}" and TimeCreated<"{}" or'.format(eventid, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE TimeCreated>="{}" and TimeCreated<"{}"'.format(start_time, end_time)
+        query += ' WHERE TimeCreated>"{}" and TimeCreated<"{}"'.format(start_time, end_time)
     return query_execute_ret(dbname, query)
 
 
@@ -338,10 +338,10 @@ def select_prefetch(dbname, start_time, end_time, proc_set=None):
     if proc_set:
         query += ' WHERE'
         for proc in proc_set:
-            query += ' FileName LIKE "%{}%" and RunTime<"{}" and RunTime>"{}" or'.format(proc, start_time, end_time)
+            query += ' FileName LIKE "%{}%" and RunTime>"{}" and RunTime<"{}" or'.format(proc, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE RunTime<="{}" and RunTime>"{}"'.format(start_time, end_time)
+        query += ' WHERE RunTime>"{}" and RunTime<"{}"'.format(start_time, end_time)
     return query_execute_ret(dbname, query)
 
 
@@ -351,10 +351,10 @@ def select_reg_RECmd(dbname, start_time, end_time, reg_set=None):
     if reg_set:
         query += ' WHERE'
         for reg in reg_set:
-            query += ' Description LIKE "%{}%" and LastWriteTimeStamp<"{}" and LastWriteTimeStamp>"{}" or'.format(reg, start_time, end_time)
+            query += ' Description LIKE "%{}%" and LastWriteTimeStamp>"{}" and LastWriteTimeStamp<"{}" or'.format(reg, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE LastWriteTimeStamp<"{}" and LastWriteTimeStamp>"{}"'.format(start_time, end_time)
+        query += ' WHERE LastWriteTimeStamp>"{}" and LastWriteTimeStamp<"{}"'.format(start_time, end_time)
     
     return query_execute_ret(dbname, query)
 
@@ -365,14 +365,18 @@ def select_reg_services(dbname, start_time, end_time, reg_set=None):
     if reg_set:
         query += ' WHERE'
         for reg in reg_set:
-            query += ' Description LIKE "%{}%" and NameKeyLastWrite<"{}" and NameKeyLastWrite>"{}" or'.format(reg, start_time, end_time)
+            query += ' Description LIKE "%{}%" and NameKeyLastWrite>"{}" and NameKeyLastWrite<"{}" or'.format(reg, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE NameKeyLastWrite<"{}" and NameKeyLastWrite>"{}"'.format(start_time, end_time)
+        query += ' WHERE NameKeyLastWrite>"{}" and NameKeyLastWrite<"{}"'.format(start_time, end_time)
     
     return query_execute_ret(dbname, query)
 
 
 def select_chain_art(dbname, arg):
     query = 'SELECT * FROM chain_art WHERE chain_number={}'.format(arg)
+    return query_execute_ret(dbname, query)
+
+def select_chain_pf(dbname, arg):
+    query = 'SELECT runcount FROM Prefetch_list WHERE id={}'.format(arg)
     return query_execute_ret(dbname, query)
