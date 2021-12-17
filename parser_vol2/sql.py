@@ -103,6 +103,9 @@ def create_table(dbname):
 
     query_execute(dbname, 'CREATE TABLE Chain_art (chain_number int, id int, art_key int, description varchar, time datetime)')
 
+
+    query_execute(dbname, 'CREATE TABLE LNKFile (id INTEGER PRIMARY KEY AUTOINCREMENT, art_key int, S')
+
 '''INSERT'''
 
 # inserting host-related data into db
