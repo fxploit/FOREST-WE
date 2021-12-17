@@ -200,9 +200,9 @@ def select_chain_start(dbname, basetime=None):
         
         # EventLog에서 뽑아오기
         if process_set:
-            query += ' UNION SELECT id, art_key, Provider, TimeCreated FROM EventLog'
+            query += ' UNION SELECT id, art_key, eventid, TimeCreated FROM EventLog'
         else:
-            query += 'SELECT id, art_key, Provider, TimeCreated FROM EventLog'
+            query += 'SELECT id, art_key, eventid, TimeCreated FROM EventLog'
 
         if eventid_set:
             query += '  WHERE'
@@ -225,12 +225,12 @@ def select_chain_start(dbname, basetime=None):
         # EventLog에서 뽑아오기
         if eventid_set:
             if process_set:
-                query += ' UNION SELECT id, art_key, Provider, TimeCreated FROM EventLog WHERE'
+                query += ' UNION SELECT id, art_key, eventid, TimeCreated FROM EventLog WHERE'
                 for eventid in eventid_set:
                     query += ' EventLog.EventID={} and EventLog.TimeCreated>"{}" or'.format(eventid, basetime)
                 query = query[0:-3]
             else:
-                query += 'SELECT id, art_key, Provider, TimeCreated FROM EventLog WHERE EventLog.TimeCreated>"{}"'.format(basetime)
+                query += 'SELECT id, art_key, eventid, TimeCreated FROM EventLog WHERE EventLog.TimeCreated>"{}"'.format(basetime)
 
     query += ' ORDER BY TimeCreated LIMIT 1'
 
@@ -242,51 +242,79 @@ def select_chain_start(dbname, basetime=None):
 
 def select_chain_end(dbname, start_time, end_time):
     eventid_set = []
-    # eventid_set = [4698,4673,5158,4720,4624,4625,4648,4616,4670,1102,4624,4625,4663] # 여기다가 chain의 종료 행위라고 볼 수 있는 event id set 추가 ex) scheduler
-    MalExec_set = [] # 여기다가 우리가 생각하는 악성행위에 사용한 프로그램명(프리패치에서 찾아볼 데이터) 추가
+    eventid_set = [4698,4673,5158,4720,4624,4625,4648,4616,4670,1102,4624,4625,4663] # 여기다가 chain의 종료 행위라고 볼 수 있는 event id set 추가 ex) scheduler
+    MalExec_set = ['ShellClient','Mimikatz','SafetyKatz','ProcDump','BadPotato','RottenPotato','PlugX','Empire','Family Keylogger','Ghost Keylogger'] # 여기다가 우리가 생각하는 악성행위에 사용한 프로그램명(프리패치에서 찾아볼 데이터) 추가
     # reg_desc_set = ['schedule', 'run', 'service', 'command']
     reg_desc_set = []
 
     # select_chain_start 에서 뽑아온 데이터 이후 시점에서의 데이터 조회. 찾는대로 반환
     # Prefetch 에서 뽑아오기
+
+    '''
+    1. Malcious Execution
+    2. Prefetch Run Count 0 -> Dropper or injector
+    3. Event log 
+    4. C2 connection
+    '''
+
+
     query = ''
-    
-    query += 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list WHERE Prefetch_list.RunCount=1 and Prefetch_list.RunTime>"{}" and Prefetch_list.RunTime<"{}"'.format(start_time, end_time)
-
-
+    ret = None
 
     if MalExec_set:
-        query += ' UNION SELECT id, art_key, FileName, RunTime FROM Prefetch_list WHERE'
+        query += 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list WHERE'
         for MalExec in MalExec_set:
             query += ' Prefetch_list.FileName LIKE "%{}%" and Prefetch_list.RunTime>"{}" and Prefetch_list.RunTime<"{}" or'.format(MalExec, start_time, end_time)
             # query += ' Prefetch_list.FileName={} and Prefetch_list.RunTime>={} and Prefetch_list.RunTime<={} or'.format(MalExec, start_time, end_time)
         
         query = query[0:-3] # ' or' 제거
 
+        query += ' ORDER BY Prefetch_list.RunTime LIMIT 1'
 
-    # EventLog에서 뽑아오기
+    ret = query_execute_ret(dbname,query)
+    
+    if ret:
+        return ret
+    
+
+    query = ''
+    query += 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list WHERE Prefetch_list.RunCount=1 and Prefetch_list.RunTime>"{}" and Prefetch_list.RunTime<"{}"'.format(start_time, end_time)
+
+    query += ' ORDER BY Prefetch_list.RunTime LIMIT 1'
+
+    ret = query_execute_ret(dbname, query)
+
+    if ret:
+        return ret
+
+    query = ''
+
     if eventid_set:
-        if MalExec_set:
-            query += ' UNION SELECT id, art_key, EventID, TimeCreated FROM EventLog WHERE'
-        else:
-            query += 'SELECT id, art_key, EventID, TimeCreated FROM EventLog WHERE'
+        query += 'SELECT id, art_key, EventID, TimeCreated FROM EventLog WHERE'
         for eventid in eventid_set:
             query += ' EventLog.EventID={} and EventLog.TimeCreated>"{}" and EventLog.TimeCreated<"{}" or'.format(eventid, start_time, end_time)
 
         query = query[0:-3]
     
+        query += ' ORDER BY EventLog.TimeCreated LIMIT 1'
+
+    ret = query_execute_ret(dbname, query)
+
+    if ret:
+        return ret
+
+    query = ''
+
     # Registry에서 뽑아오기
     if reg_desc_set:
-        if MalExec_set or eventid_set:
-            query += ' UNION SELECT id, art_key, Description, LastWriteTimeStamp FROM Registry_RECmd WHERE'
-        else:
-            query += 'SELECT id, art_key, Description, LastWriteTimeStamp FROM Registry_RECmd WHERE'
+        query += 'SELECT id, art_key, Description, LastWriteTimeStamp FROM Registry_RECmd WHERE'
+        
         for reg_desc in reg_desc_set:
             query += ' Registry_RECmd.Description LIKE "%{}%" and Registry_RECmd.LastWriteTimeStamp>"{}" and Registry_RECmd.LastWriteTimeStamp<"{}" or'.format(reg_desc, start_time, end_time)
 
         query = query[0:-3]
 
-    query += ' ORDER BY EventLog.TimeCreated LIMIT 1'
+        query += ' ORDER BY Registry_RECmd.LastWriteTimeStamp LIMIT 1'
 
     return query_execute_ret(dbname, query)
 

@@ -412,10 +412,12 @@ class Prefetch(object):
         for resource in enumerate(self.resources):
             rsc_buf+=resource[1] + '\n'
 
+        runcount = len(self.timestamps)
+
         while len(self.timestamps) < 8:
             self.timestamps.append(0)
 
-        sql.insert_prefetch(dbname, [ntpath.basename(self.pFileName), self.executableName, self.runCount], [timestamp for timestamp in self.timestamps], [volume_buf, dir_buf, rsc_buf])
+        sql.insert_prefetch(dbname, [ntpath.basename(self.pFileName), self.executableName, runcount], [timestamp for timestamp in self.timestamps], [volume_buf, dir_buf, rsc_buf])
 
         
 

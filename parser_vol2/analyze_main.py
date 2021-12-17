@@ -47,7 +47,8 @@ def analyze(dbname):
         if chain_buf == None or chain_buf[-1] != -1:
             basetime = end_time # 체인이 형성되었다면 해당 체인 이후로부터 생성
         else:
-            chain_buf.remove(-1)
+            if chain_buf[-1] == -1:
+                chain_buf.remove(-1)
             basetime = start_time # 체인이 형성되지 않았다면 시작 아티팩트 직후부터 다시 찾기
         
         time = find_chain.connect_chain(dbname, DateToStr(basetime+datetime.timedelta(milliseconds=1)))             
