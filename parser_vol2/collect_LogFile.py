@@ -1,7 +1,7 @@
 import csv
 import sql
 import glob
-import tqdm
+from tqdm import tqdm
 
 def collect_LogFiles(module_dst_path, dbname):
     paths = module_dst_path+'\\FileSystem\\NLT_LogFile*'

@@ -5,7 +5,7 @@ Chain_art 에 저장된 아티팩트를 분석하고 가중치를 메겨 해당 
 '''
 def analyze_art(dbname, chain_number):
     art_weight = {
-        
+        # 가중치 딕셔너리로 넣는 부분
 
     }
     total = 0
@@ -19,6 +19,6 @@ def analyze_art(dbname, chain_number):
     
 
     if total >= threshold:
-        return 1
+        return chain_number
     else:
-        return 0
+        return -1

@@ -30,6 +30,7 @@ def query_execute_ret(dbname, query, args=None):
 
     columns = cur.fetchall()
 
+
     cur.close()
     conn.close()
 
@@ -98,8 +99,7 @@ def create_table(dbname):
          KeyPath varchar, ValueName varchar, ValueType varchar, ValueData varchar, ValueData2 varchar, ValueData3 varchar, Comment varchar, Recursive varchar, Deleted varchar,\
               LastWriteTimeStamp datetime, PluginDetailFile varchar)')
     
-    query_execute(dbname, 'CREATE TABLE Prefetch_list (id INTEGER PRIMARY KEY AUTOINCREMENT, art_key int, FileName varchar, RunTime datetime)')
-
+    query_execute(dbname, 'CREATE TABLE Prefetch_list (id INTEGER PRIMARY KEY AUTOINCREMENT, art_key int, FileName varchar, RunCount int, RunTime datetime)')
 
     query_execute(dbname, 'CREATE TABLE Chain_art (chain_number int, id int, art_key int, description varchar, time datetime)')
 
@@ -134,7 +134,7 @@ def insert_prefetch(dbname, args1, args2, args3):
     
     for arg in args2:
         if arg != 0:
-            query_execute(dbname, 'INSERT INTO Prefetch_list(art_key, FileName, RunTime) VALUES (?,?,?)', [3]+[args1[0]]+[arg])
+            query_execute(dbname, 'INSERT INTO Prefetch_list(art_key, FileName, RunCount, RunTime) VALUES (?,?,?,?)', [3]+[args1[0]]+[args1[2]]+[arg])
 
 
 def insert_ArtMD(dbname, args):
@@ -184,13 +184,14 @@ def insert_chain_art(dbname, args):
 def select_chain_start(dbname, basetime=None):
     # 여기다가 chain의 시작이라고 볼 수 있는 행위 event id set 추가 ex) defender, WER, POWERSHELL
     eventid_set = [1000,1001,4104,4105,4106,1000,1001,1002] # WER, POWERSHELL, DEFENDER Event ID
-    process_set = ['WORD', 'CHROME', 'EXCEL', 'EDGE'] # 여기다가 우리가 조사할 시작 프로세스들 추가 ex) MS OFFICE, CHROME, EDGE, etc...
-
+    process_set = [] # 여기다가 우리가 조사할 시작 프로세스들 추가 ex) MS OFFICE, CHROME, EDGE, etc...
+    query = ''
     if basetime == None:
         #첫 실행. 즉 겹치는 시간이 존재하지 않음
         #Prefetch 에서 뽑아오기
-        query = 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list'
+        
         if process_set:
+            query += 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list'
             query += ' WHERE'
             for MalExec in process_set:
                 query += ' Prefetch_list.FileName LIKE "%{}%" or'.format(str(MalExec))
@@ -198,7 +199,10 @@ def select_chain_start(dbname, basetime=None):
             query = query[0:-3]
         
         # EventLog에서 뽑아오기
-        query += ' UNION SELECT id, art_key, Provider, TimeCreated FROM EventLog'
+        if process_set:
+            query += ' UNION SELECT id, art_key, Provider, TimeCreated FROM EventLog'
+        else:
+            query += 'SELECT id, art_key, Provider, TimeCreated FROM EventLog'
 
         if eventid_set:
             query += '  WHERE'
@@ -209,25 +213,27 @@ def select_chain_start(dbname, basetime=None):
     else:
         # 두 번째 이후부터의 실행. 체인을 중복생성하지 않게 하기 위함.
         # prefetch 에서 뽑아오기
-        query = 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list'
         if process_set:
+            query += 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list'
             query += ' WHERE'
             for MalExec in process_set:
-                query += ' Prefetch_list.FileName LIKE "%{}%" and RunTime>datetime("{}") or'.format(MalExec, basetime)
+                query += ' FileName LIKE "%{}%" and RunTime>"{}" or'.format(MalExec, basetime)
             query = query[0:-3]
                 
 
 
         # EventLog에서 뽑아오기
-        query += ' UNION SELECT id, art_key, Provider, TimeCreated FROM EventLog'
         if eventid_set:
-            query += ' WHERE'
-            for eventid in eventid_set:
-                query += ' EventLog.EventID={} and EventLog.TimeCreated>datetime("{}") or'.format(eventid, basetime)
-            query = query[0:-3]
-    
+            if process_set:
+                query += ' UNION SELECT id, art_key, Provider, TimeCreated FROM EventLog WHERE'
+                for eventid in eventid_set:
+                    query += ' EventLog.EventID={} and EventLog.TimeCreated>"{}" or'.format(eventid, basetime)
+                query = query[0:-3]
+            else:
+                query += 'SELECT id, art_key, Provider, TimeCreated FROM EventLog WHERE EventLog.TimeCreated>"{}"'.format(basetime)
 
-    query += ' ORDER BY Prefetch_list.RunTime LIMIT 1'
+    query += ' ORDER BY TimeCreated LIMIT 1'
+
 
     return query_execute_ret(dbname, query)
     
@@ -235,18 +241,24 @@ def select_chain_start(dbname, basetime=None):
 
 
 def select_chain_end(dbname, start_time, end_time):
-    eventid_set = [4698,4673,5158,4720,4624,4625,4648,4616,4670,1102,4624,4625,4663] # 여기다가 chain의 종료 행위라고 볼 수 있는 event id set 추가 ex) scheduler
+    eventid_set = []
+    # eventid_set = [4698,4673,5158,4720,4624,4625,4648,4616,4670,1102,4624,4625,4663] # 여기다가 chain의 종료 행위라고 볼 수 있는 event id set 추가 ex) scheduler
     MalExec_set = [] # 여기다가 우리가 생각하는 악성행위에 사용한 프로그램명(프리패치에서 찾아볼 데이터) 추가
-    reg_desc_set = ['schedule', 'run', 'service', 'command']
+    # reg_desc_set = ['schedule', 'run', 'service', 'command']
+    reg_desc_set = []
 
     # select_chain_start 에서 뽑아온 데이터 이후 시점에서의 데이터 조회. 찾는대로 반환
     # Prefetch 에서 뽑아오기
     query = ''
     
+    query += 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list WHERE Prefetch_list.RunCount=1 and Prefetch_list.RunTime>"{}" and Prefetch_list.RunTime<"{}"'.format(start_time, end_time)
+
+
+
     if MalExec_set:
-        query += 'SELECT id, art_key, FileName, RunTime FROM Prefetch_list WHERE'
+        query += ' UNION SELECT id, art_key, FileName, RunTime FROM Prefetch_list WHERE'
         for MalExec in MalExec_set:
-            query += ' Prefetch_list.FileName LIKE "%{}%" and Prefetch_list.RunTime>datetime("{}") and Prefetch_list.RunTime<datetime("{}") or'.format(MalExec, start_time, end_time)
+            query += ' Prefetch_list.FileName LIKE "%{}%" and Prefetch_list.RunTime>"{}" and Prefetch_list.RunTime<"{}" or'.format(MalExec, start_time, end_time)
             # query += ' Prefetch_list.FileName={} and Prefetch_list.RunTime>={} and Prefetch_list.RunTime<={} or'.format(MalExec, start_time, end_time)
         
         query = query[0:-3] # ' or' 제거
@@ -259,7 +271,7 @@ def select_chain_end(dbname, start_time, end_time):
         else:
             query += 'SELECT id, art_key, EventID, TimeCreated FROM EventLog WHERE'
         for eventid in eventid_set:
-            query += ' EventLog.EventID={} and EventLog.TimeCreated>datetime("{}") and EventLog.TimeCreated<datetime("{}") or'.format(eventid, start_time, end_time)
+            query += ' EventLog.EventID={} and EventLog.TimeCreated>"{}" and EventLog.TimeCreated<"{}" or'.format(eventid, start_time, end_time)
 
         query = query[0:-3]
     
@@ -270,7 +282,7 @@ def select_chain_end(dbname, start_time, end_time):
         else:
             query += 'SELECT id, art_key, Description, LastWriteTimeStamp FROM Registry_RECmd WHERE'
         for reg_desc in reg_desc_set:
-            query += ' Registry_RECmd.Description LIKE "%{}%" and Registry_RECmd.LastWriteTimeStamp>datetime("{}") and Registry_RECmd.LastWriteTimeStamp<datetime("{}") or'.format(reg_desc, start_time, end_time)
+            query += ' Registry_RECmd.Description LIKE "%{}%" and Registry_RECmd.LastWriteTimeStamp>"{}" and Registry_RECmd.LastWriteTimeStamp<"{}" or'.format(reg_desc, start_time, end_time)
 
         query = query[0:-3]
 
@@ -279,18 +291,16 @@ def select_chain_end(dbname, start_time, end_time):
     return query_execute_ret(dbname, query)
 
 
-
-
 def select_eventlog(dbname, start_time, end_time, eventid_set=None):
     query = 'SELECT id, art_key, EventID, TimeCreated FROM EventLog'
 
     if eventid_set:
         query += ' WHERE'
         for eventid in eventid_set:
-            query += ' EventID={} and TimeCreated>datetime("{}") and TimeCreated<datetime("{}") or'.format(eventid, start_time, end_time)
+            query += ' EventID={} and TimeCreated>"{}" and TimeCreated<"{}" or'.format(eventid, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE TimeCreated>=datetime("{}") and TimeCreated<datetime("{}")'.format(start_time, end_time)
+        query += ' WHERE TimeCreated>="{}" and TimeCreated<"{}"'.format(start_time, end_time)
     return query_execute_ret(dbname, query)
 
 
@@ -300,10 +310,10 @@ def select_prefetch(dbname, start_time, end_time, proc_set=None):
     if proc_set:
         query += ' WHERE'
         for proc in proc_set:
-            query += ' FileName LIKE "%{}%" and RunTime<datetime("{}") and RunTime>datetime("{}") or'.format(proc, start_time, end_time)
+            query += ' FileName LIKE "%{}%" and RunTime<"{}" and RunTime>"{}" or'.format(proc, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE RunTime<=datetime("{}") and RunTime>datetime("{}")'.format(start_time, end_time)
+        query += ' WHERE RunTime<="{}" and RunTime>"{}"'.format(start_time, end_time)
     return query_execute_ret(dbname, query)
 
 
@@ -313,10 +323,10 @@ def select_reg_RECmd(dbname, start_time, end_time, reg_set=None):
     if reg_set:
         query += ' WHERE'
         for reg in reg_set:
-            query += ' Description LIKE "%{}%" and LastWriteTimeStamp<datetime("{}") and LastWriteTimeStamp>datetime("{}") or'.format(reg, start_time, end_time)
+            query += ' Description LIKE "%{}%" and LastWriteTimeStamp<"{}" and LastWriteTimeStamp>"{}" or'.format(reg, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE LastWriteTimeStamp<datetime("{}") and LastWriteTimeStamp>datetime("{}")'.format(start_time, end_time)
+        query += ' WHERE LastWriteTimeStamp<"{}" and LastWriteTimeStamp>"{}"'.format(start_time, end_time)
     
     return query_execute_ret(dbname, query)
 
@@ -327,10 +337,10 @@ def select_reg_services(dbname, start_time, end_time, reg_set=None):
     if reg_set:
         query += ' WHERE'
         for reg in reg_set:
-            query += ' Description LIKE "%{}%" and NameKeyLastWrite<datetime("{}") and NameKeyLastWrite>datetime("{}") or'.format(reg, start_time, end_time)
+            query += ' Description LIKE "%{}%" and NameKeyLastWrite<"{}" and NameKeyLastWrite>"{}" or'.format(reg, start_time, end_time)
         query = query[0:-3]
     else:
-        query += ' WHERE NameKeyLastWrite<datetime("{}") and NameKeyLastWrite>datetime("{}")'.format(start_time, end_time)
+        query += ' WHERE NameKeyLastWrite<"{}" and NameKeyLastWrite>"{}"'.format(start_time, end_time)
     
     return query_execute_ret(dbname, query)
 

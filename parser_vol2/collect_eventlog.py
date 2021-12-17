@@ -81,11 +81,11 @@ def collect_eventlogs(module_dst_path, dbname):
         }
 
     files = os.listdir(os.path.join(module_dst_path, 'EventLogs'))
-
+    print(os.path.join(module_dst_path, 'EventLogs'))
 
     for file in tqdm(files):
-        if os.path.isfile(os.path.join(module_dst_path, 'EventLogs') + file):
-            with open(os.path.join(module_dst_path, 'EventLogs') + file, 'r', encoding='utf-8') as f:
+        if os.path.isfile(os.path.join(os.path.join(module_dst_path, 'EventLogs'), file)):
+            with open(os.path.join(os.path.join(module_dst_path, 'EventLogs'), file), 'r', encoding='utf-8') as f:
                 reader = csv.reader(f)
                 for row in reader:
                     try:

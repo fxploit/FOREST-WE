@@ -1,7 +1,7 @@
 import csv
 import sql
 import glob
-import tqdm
+from tqdm import tqdm
 
 def collect_MFTs(module_dst_path, dbname):
     path = module_dst_path+'\\FileSystem\\*$MFT_Output.csv'
