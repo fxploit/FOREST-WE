@@ -51,11 +51,12 @@ class MainWindow(QMainWindow):
         # PAGE 4
         self.ui.btn_page_analysis.clicked.connect(lambda: self.ui.stackedWidget.setCurrentWidget(self.ui.page_4))
         self.ui.pushButton_EventLog.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT * FROM Eventlog", 7))
-        self.ui.pushButton_Logfile.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT EventTime, Event, Detail FROM LogFile", 7))
-        self.ui.pushButton_Prefetch.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT PFfilename, PEname, RunCount FROM Prefetch", 7))
-        self.ui.pushButton_Services.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT * FROM Services", 7))
-        self.ui.pushButton_Scheduler.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT * FROM Scheduler", 7))
+        self.ui.pushButton_Logfile.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT id, LSN, EventTime, Event, Detail, FileDirectory_Name, Full_Path, Create_Time, Modified_Time, MFT_modified_Time, Access_Time, Redo, Target_VCN, Cluster_Index FROM LogFile", 7))
+        self.ui.pushButton_Prefetch.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT PFfilename, PEname, RunCount, LastExec1, LastExec2, LastExec3, LastExec4, LastExec5, LastExec6, LastExec7, LastExec8, VolumeInfo FROM Prefetch", 7))
+        self.ui.pushButton_Services.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT * FROM Registry_Services", 7))
+        self.ui.pushButton_Scheduler.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT * FROM Registry_Scheduler", 7))
         self.ui.pushButton_UsnJrnl.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT * FROM UsnJrnl", 7))
+        self.ui.pushButton_ArtMD.clicked.connect(lambda: UIFunctions.data_load(self,"SELECT * FROM ArtMD", 7))
 
         # PAGE 5
         self.ui.btn_page_review.clicked.connect(lambda: self.ui.stackedWidget.setCurrentWidget(self.ui.page_5))

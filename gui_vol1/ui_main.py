@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'mainddjoid.ui'
+## Form generated from reading UI file 'mainKPRJYn.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -945,12 +945,12 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.pushButton_UsnJrnl, 1, 2, 1, 1)
 
-        self.pushButton_11 = QPushButton(self.frame_33)
-        self.pushButton_11.setObjectName(u"pushButton_11")
-        self.pushButton_11.setFont(font)
-        self.pushButton_11.setStyleSheet(u"background-color: rgb(255, 255, 255);")
+        self.pushButton_ArtMD = QPushButton(self.frame_33)
+        self.pushButton_ArtMD.setObjectName(u"pushButton_ArtMD")
+        self.pushButton_ArtMD.setFont(font)
+        self.pushButton_ArtMD.setStyleSheet(u"background-color: rgb(255, 255, 255);")
 
-        self.gridLayout.addWidget(self.pushButton_11, 1, 3, 1, 1)
+        self.gridLayout.addWidget(self.pushButton_ArtMD, 1, 3, 1, 1)
 
         self.pushButton_13 = QPushButton(self.frame_33)
         self.pushButton_13.setObjectName(u"pushButton_13")
@@ -995,8 +995,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_36.addWidget(self.label_16)
 
         self.Table_Parsing = QTableWidget(self.frame_32)
-        if (self.Table_Parsing.columnCount() < 3):
-            self.Table_Parsing.setColumnCount(3)
+        if (self.Table_Parsing.columnCount() < 29):
+            self.Table_Parsing.setColumnCount(29)
         __qtablewidgetitem28 = QTableWidgetItem()
         self.Table_Parsing.setHorizontalHeaderItem(0, __qtablewidgetitem28)
         __qtablewidgetitem29 = QTableWidgetItem()
@@ -1013,7 +1013,7 @@ class Ui_MainWindow(object):
 "color: rgb(0, 0, 0);")
         self.Table_Parsing.setSortingEnabled(True)
         self.Table_Parsing.setRowCount(0)
-        self.Table_Parsing.setColumnCount(3)
+        self.Table_Parsing.setColumnCount(29)
         self.Table_Parsing.horizontalHeader().setHighlightSections(False)
 
         self.verticalLayout_36.addWidget(self.Table_Parsing)
@@ -1032,15 +1032,289 @@ class Ui_MainWindow(object):
         self.page_5.setObjectName(u"page_5")
         self.verticalLayout_10 = QVBoxLayout(self.page_5)
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
-        self.label_5 = QLabel(self.page_5)
-        self.label_5.setObjectName(u"label_5")
+        self.frame_31 = QFrame(self.page_5)
+        self.frame_31.setObjectName(u"frame_31")
+        self.frame_31.setFrameShape(QFrame.StyledPanel)
+        self.frame_31.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_27 = QVBoxLayout(self.frame_31)
+        self.verticalLayout_27.setSpacing(0)
+        self.verticalLayout_27.setObjectName(u"verticalLayout_27")
+        self.verticalLayout_27.setContentsMargins(0, 0, 0, 0)
+        self.frame_34 = QFrame(self.frame_31)
+        self.frame_34.setObjectName(u"frame_34")
+        self.frame_34.setFrameShape(QFrame.StyledPanel)
+        self.frame_34.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_38 = QVBoxLayout(self.frame_34)
+        self.verticalLayout_38.setObjectName(u"verticalLayout_38")
+        self.comboBox = QComboBox(self.frame_34)
+        self.comboBox.addItem("")
+        self.comboBox.setObjectName(u"comboBox")
+        self.comboBox.setStyleSheet(u"background-color: rgb(255, 255, 255);")
+
+        self.verticalLayout_38.addWidget(self.comboBox)
+
+
+        self.verticalLayout_27.addWidget(self.frame_34, 0, Qt.AlignLeft)
+
+        self.frame_35 = QFrame(self.frame_31)
+        self.frame_35.setObjectName(u"frame_35")
+        sizePolicy1.setHeightForWidth(self.frame_35.sizePolicy().hasHeightForWidth())
+        self.frame_35.setSizePolicy(sizePolicy1)
+        self.frame_35.setFrameShape(QFrame.StyledPanel)
+        self.frame_35.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_40 = QVBoxLayout(self.frame_35)
+        self.verticalLayout_40.setObjectName(u"verticalLayout_40")
+        self.label = QLabel(self.frame_35)
+        self.label.setObjectName(u"label")
+        self.label.setFont(font)
+        self.label.setStyleSheet(u"color: rgb(255, 255, 255)")
+
+        self.verticalLayout_40.addWidget(self.label)
+
+        self.frame_38 = QFrame(self.frame_35)
+        self.frame_38.setObjectName(u"frame_38")
+        self.frame_38.setFrameShape(QFrame.StyledPanel)
+        self.frame_38.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_9 = QHBoxLayout(self.frame_38)
+        self.horizontalLayout_9.setSpacing(0)
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
+        self.graphicsView = QGraphicsView(self.frame_38)
+        self.graphicsView.setObjectName(u"graphicsView")
+
+        self.horizontalLayout_9.addWidget(self.graphicsView)
+
+
+        self.verticalLayout_40.addWidget(self.frame_38)
+
+
+        self.verticalLayout_27.addWidget(self.frame_35)
+
+        self.frame_36 = QFrame(self.frame_31)
+        self.frame_36.setObjectName(u"frame_36")
+        sizePolicy1.setHeightForWidth(self.frame_36.sizePolicy().hasHeightForWidth())
+        self.frame_36.setSizePolicy(sizePolicy1)
+        self.frame_36.setFrameShape(QFrame.StyledPanel)
+        self.frame_36.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_39 = QVBoxLayout(self.frame_36)
+        self.verticalLayout_39.setObjectName(u"verticalLayout_39")
+        self.label_4 = QLabel(self.frame_36)
+        self.label_4.setObjectName(u"label_4")
+        self.label_4.setFont(font)
+        self.label_4.setStyleSheet(u"color: rgb(255, 255, 255)")
+
+        self.verticalLayout_39.addWidget(self.label_4)
+
+        self.frame_39 = QFrame(self.frame_36)
+        self.frame_39.setObjectName(u"frame_39")
+        sizePolicy1.setHeightForWidth(self.frame_39.sizePolicy().hasHeightForWidth())
+        self.frame_39.setSizePolicy(sizePolicy1)
+        self.frame_39.setFrameShape(QFrame.StyledPanel)
+        self.frame_39.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_10 = QHBoxLayout(self.frame_39)
+        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.lcdNumber = QLCDNumber(self.frame_39)
+        self.lcdNumber.setObjectName(u"lcdNumber")
+
+        self.horizontalLayout_10.addWidget(self.lcdNumber)
+
+        self.frame_40 = QFrame(self.frame_39)
+        self.frame_40.setObjectName(u"frame_40")
+        self.frame_40.setFrameShape(QFrame.StyledPanel)
+        self.frame_40.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_41 = QVBoxLayout(self.frame_40)
+        self.verticalLayout_41.setObjectName(u"verticalLayout_41")
+        self.label_2 = QLabel(self.frame_40)
+        self.label_2.setObjectName(u"label_2")
         font4 = QFont()
-        font4.setPointSize(40)
-        self.label_5.setFont(font4)
-        self.label_5.setStyleSheet(u"color: #FFFFFF")
+        font4.setPointSize(16)
+        font4.setBold(True)
+        font4.setWeight(75)
+        self.label_2.setFont(font4)
+        self.label_2.setStyleSheet(u"color: rgb(0, 0, 0);\n"
+"background-color: rgb(255, 255, 255);")
+        self.label_2.setFrameShape(QFrame.Box)
+        self.label_2.setLineWidth(3)
+        self.label_2.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_41.addWidget(self.label_2)
+
+        self.label_5 = QLabel(self.frame_40)
+        self.label_5.setObjectName(u"label_5")
+        self.label_5.setStyleSheet(u"color: rgb(255, 255, 255);")
         self.label_5.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_10.addWidget(self.label_5)
+        self.verticalLayout_41.addWidget(self.label_5)
+
+        self.listWidget = QListWidget(self.frame_40)
+        self.listWidget.setObjectName(u"listWidget")
+
+        self.verticalLayout_41.addWidget(self.listWidget)
+
+
+        self.horizontalLayout_10.addWidget(self.frame_40)
+
+        self.frame_41 = QFrame(self.frame_39)
+        self.frame_41.setObjectName(u"frame_41")
+        self.frame_41.setFrameShape(QFrame.StyledPanel)
+        self.frame_41.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_42 = QVBoxLayout(self.frame_41)
+        self.verticalLayout_42.setObjectName(u"verticalLayout_42")
+        self.label_11 = QLabel(self.frame_41)
+        self.label_11.setObjectName(u"label_11")
+        self.label_11.setFont(font4)
+        self.label_11.setStyleSheet(u"color: rgb(0, 0, 0);\n"
+"background-color: rgb(255, 255, 255);")
+        self.label_11.setFrameShape(QFrame.Box)
+        self.label_11.setLineWidth(3)
+        self.label_11.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_42.addWidget(self.label_11)
+
+        self.label_10 = QLabel(self.frame_41)
+        self.label_10.setObjectName(u"label_10")
+        self.label_10.setStyleSheet(u"color: rgb(255, 255, 255);")
+        self.label_10.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_42.addWidget(self.label_10)
+
+        self.listWidget_2 = QListWidget(self.frame_41)
+        self.listWidget_2.setObjectName(u"listWidget_2")
+
+        self.verticalLayout_42.addWidget(self.listWidget_2)
+
+
+        self.horizontalLayout_10.addWidget(self.frame_41)
+
+        self.frame_42 = QFrame(self.frame_39)
+        self.frame_42.setObjectName(u"frame_42")
+        self.frame_42.setFrameShape(QFrame.StyledPanel)
+        self.frame_42.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_45 = QVBoxLayout(self.frame_42)
+        self.verticalLayout_45.setObjectName(u"verticalLayout_45")
+        self.label_19 = QLabel(self.frame_42)
+        self.label_19.setObjectName(u"label_19")
+        self.label_19.setFont(font4)
+        self.label_19.setStyleSheet(u"color: rgb(0, 0, 0);\n"
+"background-color: rgb(255, 255, 255);")
+        self.label_19.setFrameShape(QFrame.Box)
+        self.label_19.setLineWidth(3)
+        self.label_19.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_45.addWidget(self.label_19)
+
+        self.label_18 = QLabel(self.frame_42)
+        self.label_18.setObjectName(u"label_18")
+        self.label_18.setStyleSheet(u"color: rgb(255, 255, 255);")
+        self.label_18.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_45.addWidget(self.label_18)
+
+        self.listWidget_3 = QListWidget(self.frame_42)
+        self.listWidget_3.setObjectName(u"listWidget_3")
+
+        self.verticalLayout_45.addWidget(self.listWidget_3)
+
+
+        self.horizontalLayout_10.addWidget(self.frame_42)
+
+        self.frame_43 = QFrame(self.frame_39)
+        self.frame_43.setObjectName(u"frame_43")
+        self.frame_43.setFrameShape(QFrame.StyledPanel)
+        self.frame_43.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_44 = QVBoxLayout(self.frame_43)
+        self.verticalLayout_44.setObjectName(u"verticalLayout_44")
+        self.label_21 = QLabel(self.frame_43)
+        self.label_21.setObjectName(u"label_21")
+        self.label_21.setFont(font4)
+        self.label_21.setStyleSheet(u"color: rgb(0, 0, 0);\n"
+"background-color: rgb(255, 255, 255);")
+        self.label_21.setFrameShape(QFrame.Box)
+        self.label_21.setLineWidth(3)
+        self.label_21.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_44.addWidget(self.label_21)
+
+        self.label_20 = QLabel(self.frame_43)
+        self.label_20.setObjectName(u"label_20")
+        self.label_20.setStyleSheet(u"color: rgb(255, 255, 255);")
+        self.label_20.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_44.addWidget(self.label_20)
+
+        self.listWidget_4 = QListWidget(self.frame_43)
+        self.listWidget_4.setObjectName(u"listWidget_4")
+
+        self.verticalLayout_44.addWidget(self.listWidget_4)
+
+
+        self.horizontalLayout_10.addWidget(self.frame_43)
+
+        self.frame_44 = QFrame(self.frame_39)
+        self.frame_44.setObjectName(u"frame_44")
+        self.frame_44.setFrameShape(QFrame.StyledPanel)
+        self.frame_44.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_43 = QVBoxLayout(self.frame_44)
+        self.verticalLayout_43.setObjectName(u"verticalLayout_43")
+        self.label_23 = QLabel(self.frame_44)
+        self.label_23.setObjectName(u"label_23")
+        self.label_23.setFont(font4)
+        self.label_23.setStyleSheet(u"color: rgb(0, 0, 0);\n"
+"background-color: rgb(255, 255, 255);")
+        self.label_23.setFrameShape(QFrame.Box)
+        self.label_23.setLineWidth(3)
+        self.label_23.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_43.addWidget(self.label_23)
+
+        self.label_22 = QLabel(self.frame_44)
+        self.label_22.setObjectName(u"label_22")
+        self.label_22.setStyleSheet(u"color: rgb(255, 255, 255);")
+        self.label_22.setAlignment(Qt.AlignCenter)
+
+        self.verticalLayout_43.addWidget(self.label_22)
+
+        self.listWidget_5 = QListWidget(self.frame_44)
+        self.listWidget_5.setObjectName(u"listWidget_5")
+
+        self.verticalLayout_43.addWidget(self.listWidget_5)
+
+
+        self.horizontalLayout_10.addWidget(self.frame_44)
+
+
+        self.verticalLayout_39.addWidget(self.frame_39)
+
+
+        self.verticalLayout_27.addWidget(self.frame_36)
+
+        self.frame_37 = QFrame(self.frame_31)
+        self.frame_37.setObjectName(u"frame_37")
+        self.frame_37.setFrameShape(QFrame.StyledPanel)
+        self.frame_37.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_28 = QVBoxLayout(self.frame_37)
+        self.verticalLayout_28.setObjectName(u"verticalLayout_28")
+        self.pushButton_4 = QPushButton(self.frame_37)
+        self.pushButton_4.setObjectName(u"pushButton_4")
+        self.pushButton_4.setFont(font)
+        self.pushButton_4.setStyleSheet(u"color: rgb(0, 0, 0);\n"
+"background-color: rgb(255, 255, 255);")
+
+        self.verticalLayout_28.addWidget(self.pushButton_4)
+
+        self.pushButton_5 = QPushButton(self.frame_37)
+        self.pushButton_5.setObjectName(u"pushButton_5")
+        self.pushButton_5.setFont(font)
+        self.pushButton_5.setStyleSheet(u"color: rgb(0, 0, 0);\n"
+"background-color: rgb(255, 255, 255);")
+
+        self.verticalLayout_28.addWidget(self.pushButton_5)
+
+
+        self.verticalLayout_27.addWidget(self.frame_37, 0, Qt.AlignRight|Qt.AlignBottom)
+
+
+        self.verticalLayout_10.addWidget(self.frame_31)
 
         self.stackedWidget.addWidget(self.page_5)
 
@@ -1159,7 +1433,7 @@ class Ui_MainWindow(object):
         self.pushButton_Scheduler.setText(QCoreApplication.translate("MainWindow", u"SCHEDULER", None))
         self.pushButton_Logfile.setText(QCoreApplication.translate("MainWindow", u"LOGFILE", None))
         self.pushButton_UsnJrnl.setText(QCoreApplication.translate("MainWindow", u"USNJRNL", None))
-        self.pushButton_11.setText(QCoreApplication.translate("MainWindow", u"PushButton", None))
+        self.pushButton_ArtMD.setText(QCoreApplication.translate("MainWindow", u"ALL ARTIFACT META DATA", None))
         self.pushButton_13.setText(QCoreApplication.translate("MainWindow", u"PushButton", None))
         self.pushButton_12.setText(QCoreApplication.translate("MainWindow", u"PushButton", None))
         self.label_16.setText(QCoreApplication.translate("MainWindow", u"Artifact Detail", None))
@@ -1169,6 +1443,21 @@ class Ui_MainWindow(object):
         ___qtablewidgetitem29.setText(QCoreApplication.translate("MainWindow", u"2", None));
         ___qtablewidgetitem30 = self.Table_Parsing.horizontalHeaderItem(2)
         ___qtablewidgetitem30.setText(QCoreApplication.translate("MainWindow", u"3", None));
-        self.label_5.setText(QCoreApplication.translate("MainWindow", u"PAGE 5", None))
+        self.comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"CASE Chain", None))
+
+        self.label.setText(QCoreApplication.translate("MainWindow", u"TIME LINE", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"REPORT", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"\uc720\uc785", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
+        self.label_11.setText(QCoreApplication.translate("MainWindow", u"\ubc1c\ud604", None))
+        self.label_10.setText(QCoreApplication.translate("MainWindow", u"Trigger \ubc1c\uc0dd", None))
+        self.label_19.setText(QCoreApplication.translate("MainWindow", u"\uc2e4\ud589", None))
+        self.label_18.setText(QCoreApplication.translate("MainWindow", u"Trigger \uc131\uacf5", None))
+        self.label_21.setText(QCoreApplication.translate("MainWindow", u"\uc5f0\uacb0", None))
+        self.label_20.setText(QCoreApplication.translate("MainWindow", u"\uc6d0\uaca9\uc9c0 \uc545\uc131\ucf54\ub4dc \ub2e4\uc6b4 \ubc0f \uc2e4\ud589", None))
+        self.label_23.setText(QCoreApplication.translate("MainWindow", u"\uc720\uc9c0", None))
+        self.label_22.setText(QCoreApplication.translate("MainWindow", u"\uc9c0\uc18d\uc2e4\ud589 \ubc0f \uc720\uc9c0", None))
+        self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"CSV EXPORT", None))
+        self.pushButton_5.setText(QCoreApplication.translate("MainWindow", u" XML / JSON EXPORT ", None))
     # retranslateUi
 
